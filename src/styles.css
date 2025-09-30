@@ -1,0 +1,42 @@
+:root { --bg:#0b1020; --card:#121830; --muted:#6b7280; --text:#e5e7eb; --brand:#4f46e5; --ok:#16a34a; }
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial,sans-serif;background:#0a0f1f;color:var(--text)}
+.container{max-width:1100px;margin:0 auto;padding:16px}
+.app__header{background:rgba(255,255,255,0.02);backdrop-filter:blur(6px);position:sticky;top:0;z-index:10;border-bottom:1px solid rgba(255,255,255,0.06)}
+.header__inner{display:flex;align-items:center;gap:24px}
+.logo{font-size:18px;margin:0}
+.nav a{color:var(--text);text-decoration:none;margin-right:14px;padding:8px 10px;border-radius:10px}
+.nav a.active{background:var(--brand);color:white}
+.card{background:var(--card);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:16px}
+.grid{display:grid;gap:16px}
+.grid.cols-2{grid-template-columns:repeat(2,1fr)}
+.grid.cols-3{grid-template-columns:repeat(3,1fr)}
+.row{display:flex;gap:12px;align-items:center}
+.input, .select, .slider, .btn{width:100%}
+.input, .select, .textarea{background:#0b1328;color:var(--text);border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:10px 12px}
+.label{font-size:12px;color:var(--muted)}
+.btn{background:var(--brand);color:#fff;border:none;border-radius:10px;padding:12px 14px;font-weight:600;cursor:pointer}
+.btn.secondary{background:transparent;border:1px solid rgba(255,255,255,0.18)}
+.footer{opacity:.6;text-align:center;padding:24px}
+
+
+/* Components */
+.progress{height:10px;background:#0c1732;border-radius:999px;overflow:hidden;border:1px solid rgba(255,255,255,0.06)}
+.progress__bar{height:100%;background:linear-gradient(90deg,var(--brand),#22c55e)}
+.card__row{display:flex;justify-content:space-between;align-items:center}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{padding:2px 8px;border-radius:999px;border:1px solid rgba(255,255,255,0.1);font-size:12px;color:var(--muted)}
+.table{width:100%;border-collapse:separate;border-spacing:0 8px}
+.table td, .table th{padding:10px 12px}
+.table tr{background:var(--card);border:1px solid rgba(255,255,255,0.08)}
+.table th{font-weight:600;text-align:left;color:#cbd5e1}
+.link{color:#93c5fd;text-decoration:none}
+
+/* Toast */
+.toast{position:fixed;right:20px;bottom:20px;z-index:50;display:flex;gap:10px;align-items:flex-start;background:linear-gradient(180deg,rgba(79,70,229,.95),rgba(79,70,229,.85));color:white;border-radius:14px;padding:14px 16px;box-shadow:0 10px 30px rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.2);animation:toast-in .25s ease-out, toast-out .25s ease-in 2.5s forwards}
+.toast__icon{width:22px;height:22px;flex:0 0 22px;background:rgba(255,255,255,.2);border-radius:999px;display:inline-flex;align-items:center;justify-content:center;font-weight:700}
+.toast__title{font-weight:700;margin-bottom:2px}
+.toast__text{opacity:.95}
+.toast__close{background:transparent;border:none;color:white;opacity:.9;cursor:pointer;padding:2px 6px;border-radius:8px}
+@keyframes toast-in{from{transform:translateY(10px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes toast-out{to{transform:translateY(10px);opacity:0}}
