@@ -4,11 +4,9 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Build outputs
+# Build output
 dist/
 build/
-*/dist/
-*/build/
 
 # Environment variables
 .env
@@ -98,17 +96,3 @@ Thumbs.db
 
 # TypeScript
 *.tsbuildinfo
-
-# Temporary files
-tmp/
-temp/
-
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?

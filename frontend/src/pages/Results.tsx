@@ -1,0 +1,74 @@
+import React, { useMemo, useState, useEffect } from 'react'
+import MapView from '../components/MapView'
+import CityCard from '../components/CityCard'
+import { useBudget } from '../context/BudgetContext'
+import { apiService } from '../services/api'
+import { City } from '../types'
+
+function daysBetween(a: string, b: string) {
+  return Math.max(
+    1,
+    Math.ceil((new Date(b).getTime() - new Date(a).getTime()) / 86400000),
+  )
+}
+
+export default function Results() {
+  const { params } = useBudget()
+  const [cities, setCities] = useState<City[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const loadCities = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+        const searchResults = await apiService.searchCities(params)
+        setCities(searchResults)
+      } catch (err) {
+        console.error('Failed to load cities:', err)
+        setError('Не удалось загрузить города')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadCities()
+  }, [params])
+
+  const { list, leftPct } = useMemo(() => {
+    const days = daysBetween(params.startDate, params.endDate)
+    const totals = cities.map((c) => ({ c, total: days * c.avgDailyCost }))
+    return {
+      list: totals,
+      leftPct: (total: number) => Math.min(100, (params.budget / total) * 100),
+    }
+  }, [cities, params])
+
+  if (loading) {
+    return <div className="card">Загрузка городов...</div>
+  }
+
+  if (error) {
+    return (
+      <div className="card" style={{ color: 'red' }}>
+        {error}
+      </div>
+    )
+  }
+
+  return (
+    <div className="grid cols-2">
+      <MapView cities={cities} />
+      <div className="grid">
+        {list.map((it) => (
+          <CityCard
+            key={it.c.id}
+            city={it.c}
+            budgetLeftPct={leftPct(it.total)}
+          />
+        ))}
+      </div>
+    </div>
+  )
+}
