@@ -3,29 +3,43 @@ import ProgressBar from './ProgressBar';
 import MiniPie from './MiniPie';
 import { City } from '../types';
 
+export default function CityCard({ city, budgetLeftPct }: { city: City; budgetLeftPct: number }) {
+  const pie = [
+    { name: 'Перелёты', value: city.mockBudget.flights },
+    { name: 'Жильё', value: city.mockBudget.lodging },
+    { name: 'Еда', value: city.mockBudget.food },
+    { name: 'Местное', value: city.mockBudget.local },
+    { name: 'Резерв', value: city.mockBudget.buffer },
+  ];
 
-export default function CityCard({ city, budgetLeftPct }:{ city: City; budgetLeftPct: number }){
-const pie = [
-{ name: 'Перелёты', value: city.mockBudget.flights },
-{ name: 'Жильё', value: city.mockBudget.lodging },
-{ name: 'Еда', value: city.mockBudget.food },
-{ name: 'Местное', value: city.mockBudget.local },
-{ name: 'Резерв', value: city.mockBudget.buffer },
-];
-return (
-<div className="card">
-<div className="card__row" style={{marginBottom:8}}>
-<div>
-<div style={{fontWeight:700}}>{city.name}</div>
-<div className="chip">{city.country}</div>
-</div>
-<MiniPie data={pie} />
-</div>
-<div style={{marginBottom:8}} className="label">Бюджет покрыт: {Math.round(budgetLeftPct)}%</div>
-<ProgressBar value={budgetLeftPct} />
-<div style={{marginTop:12}}>
-<Link className="link" to={`/city/${city.id}`}>Детализация</Link>
-</div>
-</div>
-);
+  const budgetStatus = budgetLeftPct >= 100 ? 'success' : budgetLeftPct >= 80 ? 'warning' : 'danger';
+
+  return (
+    <div className="card city-card">
+      <div className="city-card__header">
+        <div className="city-card__info">
+          <h3 className="city-card__name">{city.name}</h3>
+          <span className="city-card__country">{city.country}</span>
+        </div>
+        <div className="city-card__chart">
+          <MiniPie data={pie} />
+        </div>
+      </div>
+      
+      <div className="city-card__budget">
+        <div className="city-card__budget-label">
+          Бюджет покрыт: <span className={`budget-status budget-status--${budgetStatus}`}>
+            {Math.round(budgetLeftPct)}%
+          </span>
+        </div>
+        <ProgressBar value={budgetLeftPct} />
+      </div>
+      
+      <div className="city-card__actions">
+        <Link className="btn btn--outline" to={`/city/${city.id}`}>
+          Подробнее
+        </Link>
+      </div>
+    </div>
+  );
 }

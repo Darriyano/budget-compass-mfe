@@ -19,7 +19,7 @@ export default function Toast({
   return (
     <div role="status" aria-live="polite" className="toast">
       <div className="toast__icon">✓</div>
-      <div style={{ maxWidth: 260 }}>
+      <div className="toast__content">
         <div className="toast__title">{title}</div>
         <div className="toast__text">{text}</div>
       </div>
@@ -28,7 +28,7 @@ export default function Toast({
         aria-label="Закрыть"
         onClick={onClose}
       >
-        ✕
+        ×
       </button>
     </div>
   );

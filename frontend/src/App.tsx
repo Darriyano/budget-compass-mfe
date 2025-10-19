@@ -17,7 +17,7 @@ export default function App() {
           </nav>
         </div>
       </header>
-      <main className="container">
+      <main>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/results" element={<Results />} />
@@ -25,7 +25,11 @@ export default function App() {
           <Route path="/saved" element={<SavedTrips />} />
         </Routes>
       </main>
-      <footer className="footer">Учебный проект · React + TS</footer>
+      <footer className="footer">
+        <div className="container">
+          <p>Учебный проект · React + TypeScript</p>
+        </div>
+      </footer>
     </div>
   );
 }
