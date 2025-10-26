@@ -1,3 +1,4 @@
+import 'dotenv/config'
 import express from 'express'
 import helmet from 'helmet'
 import morgan from 'morgan'
@@ -9,6 +10,7 @@ import cityRoutes from './routes/cityRoutes'
 import tripRoutes from './routes/tripRoutes'
 import currencyRoutes from './routes/currencyRoutes'
 import travelBotRoutes from './routes/travelBotRoutes'
+import authRoutes from './routes/authRoutes'
 
 const app = express()
 const PORT = process.env.PORT || 5000
@@ -25,6 +27,7 @@ app.use('/api/cities', cityRoutes)
 app.use('/api/trips', tripRoutes)
 app.use('/api/currencies', currencyRoutes)
 app.use('/api/travelbot', travelBotRoutes)
+app.use('/api/auth', authRoutes)
 
 // Health check
 app.get('/health', (req, res) => {
@@ -47,6 +50,7 @@ app.listen(PORT, () => {
   console.log(`✈️  Trips API: http://localhost:${PORT}/api/trips`)
   console.log(`💱 Currency API: http://localhost:${PORT}/api/currencies`)
   console.log(`🤖 TravelBot API: http://localhost:${PORT}/api/travelbot`)
+  console.log(`🔐 Auth API: http://localhost:${PORT}/api/auth`)
 })
 
 export default app

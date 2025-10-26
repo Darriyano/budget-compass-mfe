@@ -17,6 +17,7 @@ export class TripModel {
     params: SearchParams
     adjustedBudget: BudgetBreakdown
     total: number
+    userId?: string
   }): SavedTrip {
     const trip: SavedTrip = {
       id: uuidv4(),
@@ -25,13 +26,21 @@ export class TripModel {
       adjustedBudget: tripData.adjustedBudget,
       total: tripData.total,
       savedAt: new Date().toISOString(),
+      userId: tripData.userId,
     }
 
     this.trips.unshift(trip) // добавляем в начало списка
     return trip
   }
 
-  static deleteTrip(id: string): boolean {
+  static deleteTrip(id: string, userId?: string): boolean {
+    const trip = this.trips.find((trip) => trip.id === id)
+    
+    // Проверяем права доступа
+    if (userId && trip?.userId && trip.userId !== userId) {
+      return false
+    }
+
     const index = this.trips.findIndex((trip) => trip.id === id)
     if (index !== -1) {
       this.trips.splice(index, 1)
@@ -42,5 +51,9 @@ export class TripModel {
 
   static getTripsByCityId(cityId: string): SavedTrip[] {
     return this.trips.filter((trip) => trip.cityId === cityId)
+  }
+
+  static getTripsByUserId(userId: string): SavedTrip[] {
+    return this.trips.filter((trip) => trip.userId === userId)
   }
 }

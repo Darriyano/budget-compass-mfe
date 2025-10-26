@@ -36,6 +36,7 @@ export type SavedTrip = {
   adjustedBudget: BudgetBreakdown
   total: number
   savedAt: string
+  userId?: string
 }
 
 export type CurrencyRates = {
@@ -43,6 +44,52 @@ export type CurrencyRates = {
   EUR: number
   TRY: number
   GEL: number
+  RUB: number
+  PLN: number
+  CZK: number
+  HUF: number
+  RON: number
+  BGN: number
+  RSD: number
+  HRK: number
+  ALL: number
+  MKD: number
+  UAH: number
+  BYN: number
+  MDL: number
+  LTL: number
+  LVL: number
+  EEK: number
+}
+
+export type User = {
+  id: string
+  email: string
+  password: string
+  name: string
+  createdAt: string
+}
+
+export type AuthRequest = {
+  email: string
+  password: string
+}
+
+export type RegisterRequest = {
+  email: string
+  password: string
+  name: string
+}
+
+export type AuthResponse = {
+  success: boolean
+  token?: string
+  user?: {
+    id: string
+    email: string
+    name: string
+  }
+  error?: string
 }
 
 export type TravelBotRequest = {

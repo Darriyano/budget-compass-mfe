@@ -1,11 +1,19 @@
 import { Request, Response } from 'express'
 import { TripModel } from '../models/TripModel'
 import { SavedTrip, SearchParams, BudgetBreakdown } from '../types'
+import { AuthenticatedRequest } from '../middleware/auth'
 
 export class TripController {
   static async getAllTrips(req: Request, res: Response): Promise<void> {
     try {
-      const trips = TripModel.getAllTrips()
+      const userId = (req as AuthenticatedRequest).userId
+      
+      // Если пользователь авторизован, показываем только его поездки
+      // Иначе показываем все публичные поездки
+      const trips = userId 
+        ? TripModel.getTripsByUserId(userId)
+        : TripModel.getAllTrips().filter(trip => !trip.userId)
+        
       res.json({
         success: true,
         data: trips,
@@ -21,12 +29,22 @@ export class TripController {
   static async getTripById(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params
+      const userId = (req as AuthenticatedRequest).userId
       const trip = TripModel.getTripById(id)
 
       if (!trip) {
         res.status(404).json({
           success: false,
           error: 'Trip not found',
+        })
+        return
+      }
+
+      // Проверяем права доступа
+      if (trip.userId && trip.userId !== userId) {
+        res.status(403).json({
+          success: false,
+          error: 'Access denied',
         })
         return
       }
@@ -46,6 +64,7 @@ export class TripController {
   static async saveTrip(req: Request, res: Response): Promise<void> {
     try {
       const { cityId, params, adjustedBudget, total } = req.body
+      const userId = (req as AuthenticatedRequest).userId
 
       if (!cityId || !params || !adjustedBudget || !total) {
         res.status(400).json({
@@ -61,6 +80,7 @@ export class TripController {
         params: params as SearchParams,
         adjustedBudget: adjustedBudget as BudgetBreakdown,
         total: Number(total),
+        userId,
       })
 
       res.status(201).json({
@@ -78,12 +98,13 @@ export class TripController {
   static async deleteTrip(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params
-      const deleted = TripModel.deleteTrip(id)
+      const userId = (req as AuthenticatedRequest).userId
+      const deleted = TripModel.deleteTrip(id, userId)
 
       if (!deleted) {
         res.status(404).json({
           success: false,
-          error: 'Trip not found',
+          error: 'Trip not found or access denied',
         })
         return
       }

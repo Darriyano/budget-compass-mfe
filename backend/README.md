@@ -1,112 +1,120 @@
 # Budget Compass Backend
 
-Backend API для приложения "Бюджетный компас" - планировщика поездок.
+Backend API для приложения планирования путешествий Budget Compass.
 
-## Технологии
+## Возможности
 
-- Node.js
-- Express.js
-- TypeScript
-- Nodemon (для разработки)
+- 🌍 **Города**: 20+ городов Европы и СНГ с детальной информацией о стоимости
+- 💱 **Валюты**: Поддержка 20+ валют с актуальными курсами
+- ✈️ **Поездки**: Сохранение и управление планами путешествий
+- 🔐 **Авторизация**: JWT-авторизация с регистрацией и входом
+- 🤖 **AI Чатбот**: Интеграция с GIGACHAT для ответов на вопросы о путешествиях
 
 ## Установка
 
+1. Установите зависимости:
 ```bash
 npm install
 ```
 
+2. Скопируйте файл с переменными окружения:
+```bash
+cp env.example .env
+```
+
+3. Настройте переменные окружения в файле `.env`:
+```env
+# Server configuration
+PORT=5000
+NODE_ENV=development
+
+# JWT Secret (обязательно измените в продакшене!)
+JWT_SECRET=your-super-secret-jwt-key-change-in-production
+
+# GIGACHAT API credentials (опционально)
+GIGACHAT_CLIENT_ID=your-gigachat-client-id
+GIGACHAT_CLIENT_SECRET=your-gigachat-client-secret
+```
+
+## Настройка GIGACHAT
+
+Для использования AI-чатбота необходимо получить API ключи от GIGACHAT:
+
+1. Зарегистрируйтесь на [developers.sber.ru](https://developers.sber.ru/portal/products/gigachat)
+2. Создайте приложение и получите `client_id` и `client_secret`
+3. Добавьте их в файл `.env`
+
+Если GIGACHAT не настроен, чатбот будет использовать локальные ответы.
+
 ## Запуск
 
 ### Режим разработки
-
 ```bash
 npm run dev
 ```
 
-### Продакшн
-
+### Продакшен
 ```bash
 npm run build
 npm start
 ```
 
-## API Эндпоинты
+## API Endpoints
+
+### Авторизация
+- `POST /api/auth/register` - Регистрация пользователя
+- `POST /api/auth/login` - Вход в систему
+- `GET /api/auth/profile` - Получение профиля (требует авторизации)
 
 ### Города
-
-- `GET /api/cities` - получить все города
-- `GET /api/cities/search` - поиск городов по параметрам
-- `GET /api/cities/:id` - получить город по ID
+- `GET /api/cities` - Получить все города
+- `GET /api/cities/:id` - Получить город по ID
+- `POST /api/cities/search` - Поиск городов по параметрам
 
 ### Поездки
-
-- `GET /api/trips` - получить все сохраненные поездки
-- `GET /api/trips/:id` - получить поездку по ID
-- `POST /api/trips` - сохранить новую поездку
-- `DELETE /api/trips/:id` - удалить поездку
+- `GET /api/trips` - Получить поездки (публичные или пользователя)
+- `GET /api/trips/:id` - Получить поездку по ID
+- `POST /api/trips` - Сохранить новую поездку
+- `DELETE /api/trips/:id` - Удалить поездку
 
 ### Валюты
+- `GET /api/currencies` - Получить курсы валют
+- `POST /api/currencies/convert` - Конвертировать валюту
 
-- `GET /api/currencies/rates` - получить курсы валют
-- `GET /api/currencies/convert` - конвертировать валюту
+### Чатбот
+- `POST /api/travelbot` - Задать вопрос чатботу
 
-### TravelBot
-
-- `POST /api/travelbot/ask` - задать вопрос TravelBot
-
-### Health Check
-
-- `GET /health` - проверка состояния сервера
-
-## Примеры запросов
-
-### Поиск городов
+## Структура проекта
 
 ```
-GET /api/cities/search?budget=1000&startDate=2024-01-01&endDate=2024-01-07&prefCulture=70&prefNature=30&prefParty=50
+src/
+├── controllers/     # Контроллеры для обработки запросов
+├── middleware/      # Middleware (CORS, авторизация, обработка ошибок)
+├── models/          # Модели данных (города, поездки, пользователи)
+├── routes/          # Маршруты API
+├── services/        # Бизнес-логика (GIGACHAT, TravelBot)
+├── types/           # TypeScript типы
+└── server.ts        # Главный файл сервера
 ```
 
-### Сохранение поездки
+## Технологии
 
-```
-POST /api/trips
-Content-Type: application/json
+- **Node.js** + **Express.js** - сервер
+- **TypeScript** - типизация
+- **JWT** - авторизация
+- **bcryptjs** - хеширование паролей
+- **Axios** - HTTP клиент для GIGACHAT API
+- **Helmet** - безопасность
+- **Morgan** - логирование
 
-{
-  "cityId": "lisbon",
-  "params": {
-    "budget": 1000,
-    "startDate": "2024-01-01",
-    "endDate": "2024-01-07",
-    "origin": "Москва",
-    "prefCulture": 70,
-    "prefNature": 30,
-    "prefParty": 50
-  },
-  "adjustedBudget": {
-    "flights": 40,
-    "lodging": 30,
-    "food": 15,
-    "local": 10,
-    "buffer": 5
-  },
-  "total": 1000
-}
-```
+## Безопасность
 
-### Конвертация валют
+- Пароли хешируются с помощью bcrypt
+- JWT токены с истечением срока действия
+- CORS настроен для фронтенда
+- Helmet для защиты заголовков
+- Валидация входных данных
 
-```
-GET /api/currencies/convert?amount=100&from=USD&to=EUR
-```
+## Лицензия
 
-### Вопрос TravelBot
-
-```
-POST /api/travelbot/ask
-Content-Type: application/json
-
-{
-  "question": "Где попробовать местную кухню?"
-}
-```
+MIT

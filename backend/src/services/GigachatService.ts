@@ -1,22 +1,83 @@
+import axios from 'axios'
 import { TravelBotRequest, TravelBotResponse } from '../types'
-import { GigachatService } from './GigachatService'
 
-export class TravelBotService {
-  static async askQuestion(
-    request: TravelBotRequest,
-  ): Promise<TravelBotResponse> {
+export class GigachatService {
+  private static readonly API_URL = 'https://gigachat.devices.sberbank.ru/api/v1/chat/completions'
+  private static readonly AUTH_URL = 'https://ngw.devices.sberbank.ru:9443/api/v2/oauth'
+
+  private static async getAccessToken(): Promise<string> {
+    const clientId = process.env.GIGACHAT_CLIENT_ID
+    const clientSecret = process.env.GIGACHAT_CLIENT_SECRET
+
+    if (!clientId || !clientSecret) {
+      throw new Error('GIGACHAT credentials not configured')
+    }
+
     try {
-      // Пытаемся использовать GIGACHAT
-      return await GigachatService.askQuestion(request)
+      const response = await axios.post(this.AUTH_URL, {
+        client_id: clientId,
+        client_secret: clientSecret,
+      }, {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      })
+
+      return response.data.access_token
     } catch (error) {
-      console.error('TravelBot error:', error)
-      
-      // Fallback к локальным ответам
-      return this.getLocalResponse(request.question)
+      console.error('GIGACHAT auth error:', error)
+      throw new Error('Failed to authenticate with GIGACHAT')
     }
   }
 
-  private static getLocalResponse(question: string): TravelBotResponse {
+  static async askQuestion(request: TravelBotRequest): Promise<TravelBotResponse> {
+    try {
+      const accessToken = await this.getAccessToken()
+
+      const systemPrompt = `Ты - помощник по планированию путешествий Budget Compass. 
+      Твоя задача - помогать пользователям с вопросами о путешествиях, бюджетах, городах и планировании поездок.
+      
+      Доступные города: Лиссабон, Стамбул, Тбилиси, Рига, Ереван, Будапешт, Прага, Краков, Бухарест, София, Белград, Загреб, Любляна, Братислава, Вильнюс, Таллин, Киев, Минск, Кишинев, Скопье.
+      
+      Отвечай на русском языке, будь дружелюбным и полезным. Если вопрос не связан с путешествиями, вежливо перенаправь разговор в нужное русло.`
+
+      const response = await axios.post(
+        this.API_URL,
+        {
+          model: 'GigaChat',
+          messages: [
+            {
+              role: 'system',
+              content: systemPrompt,
+            },
+            {
+              role: 'user',
+              content: request.question,
+            },
+          ],
+          max_tokens: 1000,
+          temperature: 0.7,
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      )
+
+      const answer = response.data.choices?.[0]?.message?.content || 'Извините, не удалось получить ответ от AI.'
+
+      return { answer }
+    } catch (error) {
+      console.error('GIGACHAT API error:', error)
+      
+      // Fallback к локальным ответам
+      return this.getFallbackResponse(request.question)
+    }
+  }
+
+  private static getFallbackResponse(question: string): TravelBotResponse {
     const questionLower = question.toLowerCase().trim()
 
     const responses: Record<string, string> = {
