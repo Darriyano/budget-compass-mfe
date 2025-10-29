@@ -67,6 +67,46 @@ export const BudgetProvider: React.FC<{ children: React.ReactNode }> = ({
     loadSavedTrips()
   }, [])
 
+  // Auto-detect origin city based on geolocation (best-effort)
+  useEffect(() => {
+    let cancelled = false
+    const detect = async () => {
+      if (!('geolocation' in navigator)) return
+      try {
+        const pos = await new Promise<GeolocationPosition>((resolve, reject) =>
+          navigator.geolocation.getCurrentPosition(resolve, reject, {
+            enableHighAccuracy: false,
+            timeout: 3000,
+            maximumAge: 60_000,
+          }),
+        )
+        if (cancelled) return
+        const { latitude, longitude } = pos.coords
+        const cities = await apiService.getCities()
+        if (!cities || !cities.length) return
+        const dist = (aLat: number, aLng: number, bLat: number, bLng: number) => {
+          const dLat = (aLat - bLat) * Math.PI / 180
+          const dLng = (aLng - bLng) * Math.PI / 180
+          const la1 = aLat * Math.PI / 180
+          const la2 = bLat * Math.PI / 180
+          const x = Math.sin(dLat/2)**2 + Math.cos(la1)*Math.cos(la2)*Math.sin(dLng/2)**2
+          return 2 * 6371 * Math.asin(Math.sqrt(x))
+        }
+        let best = cities[0]
+        let bestD = dist(latitude, longitude, best.lat, best.lng)
+        for (const c of cities) {
+          const d = dist(latitude, longitude, c.lat, c.lng)
+          if (d < bestD) { best = c; bestD = d }
+        }
+        setParamsState((prev) => ({ ...prev, origin: best.name }))
+      } catch {
+        // ignore
+      }
+    }
+    detect()
+    return () => { cancelled = true }
+  }, [])
+
   // Save to localStorage as backup
   useEffect(() => {
     localStorage.setItem(LS_KEY, JSON.stringify(saved))

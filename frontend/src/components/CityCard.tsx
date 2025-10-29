@@ -3,7 +3,7 @@ import ProgressBar from './ProgressBar';
 import MiniPie from './MiniPie';
 import { City } from '../types';
 
-export default function CityCard({ city, budgetLeftPct }: { city: City; budgetLeftPct: number }) {
+export default function CityCard({ city, budgetLeftPct, match }: { city: City; budgetLeftPct: number; match?: { culture: number; nature: number; party: number; weighted: number } }) {
   const pie = [
     { name: 'Перелёты', value: city.mockBudget.flights },
     { name: 'Жильё', value: city.mockBudget.lodging },
@@ -26,6 +26,18 @@ export default function CityCard({ city, budgetLeftPct }: { city: City; budgetLe
         </div>
       </div>
       
+      {match && (
+        <div className="city-card__match">
+          <div className="city-card__match-title">Соответствие вашим предпочтениям</div>
+          <div className="chips" style={{ gap: 8 }}>
+            <span className="chip">Культура: {Math.round(match.culture)}%</span>
+            <span className="chip">Природа: {Math.round(match.nature)}%</span>
+            <span className="chip">Ночная жизнь: {Math.round(match.party)}%</span>
+            <span className="chip" style={{ fontWeight: 700 }}>Итог: {Math.round(match.weighted)}%</span>
+          </div>
+        </div>
+      )}
+
       <div className="city-card__budget">
         <div className="city-card__budget-label">
           Бюджет покрыт: <span className={`budget-status budget-status--${budgetStatus}`}>

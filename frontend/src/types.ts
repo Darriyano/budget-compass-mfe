@@ -17,6 +17,11 @@ export type City = {
   avgDailyCost: number // усредненная дневная стоимость
   mockBudget: BudgetBreakdown // базовое распределение
   image?: string
+  scores?: {
+    culture: number
+    nature: number
+    party: number
+  }
 }
 
 export type SearchParams = {
@@ -48,6 +53,11 @@ export type CurrencyRates = {
 export type TravelBotRequest = {
   question: string
   country?: string
+  city?: { name: string; country?: string }
+  budget?: number
+  budgetBreakdown?: BudgetBreakdown
+  preferences?: { culture?: number; nature?: number; party?: number }
+  changeEvent?: { key: 'flights' | 'lodging' | 'food' | 'local' | 'buffer'; oldValue: number; newValue: number }
 }
 
 export type TravelBotResponse = {

@@ -1,4 +1,4 @@
-import { City, SavedTrip, CurrencyRates, TravelBotResponse } from '../types'
+import { City, SavedTrip, CurrencyRates, TravelBotResponse, TravelBotRequest } from '../types'
 
 const API_BASE_URL = 'http://localhost:5000/api'
 
@@ -121,10 +121,10 @@ class ApiService {
   }
 
   // TravelBot API
-  async askTravelBot(question: string, country?: string): Promise<TravelBotResponse> {
+  async askTravelBot(payload: TravelBotRequest): Promise<TravelBotResponse> {
     return this.request<TravelBotResponse>('/travelbot/ask', {
       method: 'POST',
-      body: JSON.stringify({ question, country }),
+      body: JSON.stringify(payload),
     })
   }
 }

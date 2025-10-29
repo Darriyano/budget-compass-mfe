@@ -11,6 +11,7 @@ export class CityModel {
       avgDailyCost: 95,
       mockBudget: { flights: 40, lodging: 30, food: 15, local: 10, buffer: 5 },
       image: '',
+      scores: { culture: 85, nature: 60, party: 70 },
     },
     {
       id: 'istanbul',
@@ -21,6 +22,7 @@ export class CityModel {
       avgDailyCost: 70,
       mockBudget: { flights: 35, lodging: 25, food: 20, local: 10, buffer: 10 },
       image: '',
+      scores: { culture: 90, nature: 50, party: 80 },
     },
     {
       id: 'tbilisi',
@@ -31,6 +33,7 @@ export class CityModel {
       avgDailyCost: 60,
       mockBudget: { flights: 30, lodging: 30, food: 20, local: 10, buffer: 10 },
       image: '',
+      scores: { culture: 80, nature: 70, party: 65 },
     },
     {
       id: 'riga',
@@ -41,6 +44,7 @@ export class CityModel {
       avgDailyCost: 80,
       mockBudget: { flights: 30, lodging: 35, food: 20, local: 10, buffer: 5 },
       image: '',
+      scores: { culture: 75, nature: 65, party: 60 },
     },
     {
       id: 'yerevan',
@@ -51,6 +55,7 @@ export class CityModel {
       avgDailyCost: 55,
       mockBudget: { flights: 35, lodging: 25, food: 20, local: 10, buffer: 10 },
       image: '',
+      scores: { culture: 78, nature: 68, party: 55 },
     },
     {
       id: 'budapest',
@@ -61,6 +66,7 @@ export class CityModel {
       avgDailyCost: 75,
       mockBudget: { flights: 35, lodging: 30, food: 20, local: 10, buffer: 5 },
       image: '',
+      scores: { culture: 88, nature: 55, party: 82 },
     },
     {
       id: 'prague',
@@ -71,6 +77,7 @@ export class CityModel {
       avgDailyCost: 85,
       mockBudget: { flights: 40, lodging: 30, food: 20, local: 10, buffer: 5 },
       image: '',
+      scores: { culture: 92, nature: 60, party: 70 },
     },
     {
       id: 'krakow',
@@ -81,6 +88,7 @@ export class CityModel {
       avgDailyCost: 65,
       mockBudget: { flights: 30, lodging: 25, food: 20, local: 10, buffer: 5 },
       image: '',
+      scores: { culture: 85, nature: 62, party: 65 },
     },
     {
       id: 'bucharest',
@@ -91,6 +99,7 @@ export class CityModel {
       avgDailyCost: 50,
       mockBudget: { flights: 30, lodging: 20, food: 15, local: 10, buffer: 5 },
       image: '',
+      scores: { culture: 70, nature: 50, party: 75 },
     },
     {
       id: 'sofia',
@@ -101,6 +110,7 @@ export class CityModel {
       avgDailyCost: 45,
       mockBudget: { flights: 30, lodging: 20, food: 15, local: 10, buffer: 5 },
       image: '',
+      scores: { culture: 72, nature: 65, party: 60 },
     },
     {
       id: 'belgrade',
@@ -111,6 +121,7 @@ export class CityModel {
       avgDailyCost: 55,
       mockBudget: { flights: 35, lodging: 25, food: 20, local: 10, buffer: 10 },
       image: '',
+      scores: { culture: 75, nature: 55, party: 78 },
     },
     {
       id: 'zagreb',
@@ -121,6 +132,7 @@ export class CityModel {
       avgDailyCost: 70,
       mockBudget: { flights: 35, lodging: 30, food: 20, local: 10, buffer: 5 },
       image: '',
+      scores: { culture: 76, nature: 70, party: 62 },
     },
     {
       id: 'ljubljana',
@@ -131,6 +143,7 @@ export class CityModel {
       avgDailyCost: 80,
       mockBudget: { flights: 40, lodging: 30, food: 20, local: 10, buffer: 10 },
       image: '',
+      scores: { culture: 80, nature: 80, party: 58 },
     },
     {
       id: 'bratislava',
@@ -141,6 +154,7 @@ export class CityModel {
       avgDailyCost: 70,
       mockBudget: { flights: 35, lodging: 30, food: 20, local: 10, buffer: 5 },
       image: '',
+      scores: { culture: 78, nature: 65, party: 60 },
     },
     {
       id: 'vilnius',
@@ -151,6 +165,7 @@ export class CityModel {
       avgDailyCost: 75,
       mockBudget: { flights: 35, lodging: 30, food: 20, local: 10, buffer: 5 },
       image: '',
+      scores: { culture: 82, nature: 62, party: 58 },
     },
     {
       id: 'tallinn',
@@ -161,6 +176,7 @@ export class CityModel {
       avgDailyCost: 85,
       mockBudget: { flights: 40, lodging: 30, food: 20, local: 10, buffer: 5 },
       image: '',
+      scores: { culture: 84, nature: 70, party: 60 },
     },
     {
       id: 'kiev',
@@ -171,6 +187,7 @@ export class CityModel {
       avgDailyCost: 40,
       mockBudget: { flights: 25, lodging: 15, food: 15, local: 10, buffer: 5 },
       image: '',
+      scores: { culture: 68, nature: 65, party: 55 },
     },
     {
       id: 'minsk',
@@ -181,6 +198,7 @@ export class CityModel {
       avgDailyCost: 45,
       mockBudget: { flights: 30, lodging: 20, food: 15, local: 10, buffer: 5 },
       image: '',
+      scores: { culture: 70, nature: 60, party: 50 },
     },
     {
       id: 'chisinau',
@@ -191,6 +209,7 @@ export class CityModel {
       avgDailyCost: 35,
       mockBudget: { flights: 25, lodging: 15, food: 15, local: 10, buffer: 5 },
       image: '',
+      scores: { culture: 65, nature: 55, party: 48 },
     },
     {
       id: 'skopje',
@@ -201,6 +220,7 @@ export class CityModel {
       avgDailyCost: 50,
       mockBudget: { flights: 30, lodging: 20, food: 15, local: 10, buffer: 5 },
       image: '',
+      scores: { culture: 68, nature: 60, party: 52 },
     },
   ]
 
@@ -230,12 +250,20 @@ export class CityModel {
     )
 
     return this.cities
-      .map((city) => ({
-        ...city,
-        totalCost: days * city.avgDailyCost,
-        budgetFit: (searchParams.budget / (days * city.avgDailyCost)) * 100,
-      }))
-      .filter((city) => city.budgetFit >= 50) // фильтруем города, которые помещаются в бюджет
-      .sort((a, b) => b.budgetFit - a.budgetFit) // сортируем по соответствию бюджету
+      .map((city) => {
+        const totalCost = days * city.avgDailyCost
+        const budgetFit = (searchParams.budget / totalCost) * 100
+        const s = city.scores || { culture: 60, nature: 60, party: 60 }
+        const prefSum = Math.max(1, searchParams.prefCulture + searchParams.prefNature + searchParams.prefParty)
+        const wC = searchParams.prefCulture / prefSum
+        const wN = searchParams.prefNature / prefSum
+        const wP = searchParams.prefParty / prefSum
+        const factorScore = s.culture * wC + s.nature * wN + s.party * wP
+        // Combined score prioritizes budget fit then factor match
+        const combinedScore = budgetFit * 0.7 + (factorScore / 100) * 30
+        return { ...city, totalCost, budgetFit, combinedScore }
+      })
+      .filter((city: any) => city.budgetFit >= 50)
+      .sort((a: any, b: any) => b.combinedScore - a.combinedScore)
   }
 }

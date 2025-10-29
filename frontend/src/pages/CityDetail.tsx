@@ -144,7 +144,7 @@ export default function CityDetail() {
         </div>
       </div>
       <div className="grid">
-        <TravelBot />
+        <TravelBot city={city} />
       </div>
 
       {showToast && (

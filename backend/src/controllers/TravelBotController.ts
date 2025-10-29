@@ -5,7 +5,7 @@ import { TravelBotRequest } from '../types'
 export class TravelBotController {
   static async askQuestion(req: Request, res: Response): Promise<void> {
     try {
-      const { question, country } = req.body
+      const { question, country, city, budget, budgetBreakdown, preferences, changeEvent } = req.body
 
       if (!question || typeof question !== 'string') {
         res.status(400).json({
@@ -15,7 +15,15 @@ export class TravelBotController {
         return
       }
 
-      const request: TravelBotRequest = { question, country }
+      const request: TravelBotRequest = {
+        question,
+        country,
+        city,
+        budget,
+        budgetBreakdown,
+        preferences,
+        changeEvent,
+      }
       const response = await GigachatService.askQuestion(request)
 
       res.json({
