@@ -1,119 +1,110 @@
 import axios from 'axios'
+import crypto from 'crypto'
+import https from 'https'
 import { TravelBotRequest, TravelBotResponse } from '../types'
 
 export class GigachatService {
-  private static readonly API_URL = 'https://gigachat.devices.sberbank.ru/api/v1/chat/completions'
-  private static readonly AUTH_URL = 'https://ngw.devices.sberbank.ru:9443/api/v2/oauth'
+  private static cachedToken: string | null = null
+  private static tokenExpiresAt = 0
+  private static readonly OAUTH_URL = 'https://ngw.devices.sberbank.ru:9443/api/v2/oauth'
+  private static readonly CHAT_URL = 'https://gigachat.devices.sberbank.ru/api/v1/chat/completions'
+  private static readonly DEFAULT_SCOPE = 'GIGACHAT_API_PERS'
+  private static readonly DEFAULT_MODEL = 'GigaChat'
+
+  private static getHttpsAgent(): https.Agent {
+    const tlsVerifyFlag = process.env.GIGACHAT_TLS_VERIFY
+    const rejectUnauthorized = tlsVerifyFlag === '1' ? true : false
+    return new https.Agent({ rejectUnauthorized })
+  }
 
   private static async getAccessToken(): Promise<string> {
-    const clientId = process.env.GIGACHAT_CLIENT_ID
-    const clientSecret = process.env.GIGACHAT_CLIENT_SECRET
-
-    if (!clientId || !clientSecret) {
-      throw new Error('GIGACHAT credentials not configured')
+    const now = Date.now()
+    if (this.cachedToken && this.tokenExpiresAt > now + 60_000) {
+      return this.cachedToken
     }
 
-    try {
-      const response = await axios.post(this.AUTH_URL, {
-        client_id: clientId,
-        client_secret: clientSecret,
-      }, {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-      })
+    const clientId = process.env.GIGACHAT_CLIENT_ID
+    const clientSecret = process.env.GIGACHAT_SECRET || process.env.GIGACHAT_CLIENT_SECRET
+    const scope = process.env.GIGACHAT_SCOPE || this.DEFAULT_SCOPE
 
-      return response.data.access_token
-    } catch (error) {
-      console.error('GIGACHAT auth error:', error)
-      throw new Error('Failed to authenticate with GIGACHAT')
+    if (!clientId || !clientSecret) {
+      throw new Error('GIGACHAT_CLIENT_ID or GIGACHAT_SECRET is not configured')
+    }
+
+    const auth = Buffer.from(`${clientId}:${clientSecret}`).toString('base64')
+
+    try {
+      const response = await axios.post(
+        this.OAUTH_URL,
+        `scope=${encodeURIComponent(scope)}`,
+        {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            Accept: 'application/json',
+            RqUID: crypto.randomUUID(),
+            Authorization: `Basic ${auth}`,
+          },
+          httpsAgent: this.getHttpsAgent(),
+          timeout: Number(process.env.GIGACHAT_TIMEOUT || 60) * 1000,
+        },
+      )
+
+      const { access_token, expires_in } = response.data as { access_token: string; expires_in: number }
+      this.cachedToken = access_token
+      this.tokenExpiresAt = now + Math.max(0, (expires_in - 60)) * 1000
+      return access_token
+    } catch (err: any) {
+      const status = err?.response?.status
+      if (status === 401 || status === 403) {
+        const msg = 'GigaChat OAuth unauthorized: check GIGACHAT_CLIENT_ID/GIGACHAT_SECRET and SCOPE'
+        console.error(msg, err?.response?.data)
+        const e = new Error(msg)
+        ;(e as any).status = status
+        throw e
+      }
+      throw err
     }
   }
 
   static async askQuestion(request: TravelBotRequest): Promise<TravelBotResponse> {
     try {
-      const accessToken = await this.getAccessToken()
+      const token = await this.getAccessToken()
 
-      const systemPrompt = `Ты - помощник по планированию путешествий Budget Compass. 
-      Твоя задача - помогать пользователям с вопросами о путешествиях, бюджетах, городах и планировании поездок.
-      
-      Доступные города: Лиссабон, Стамбул, Тбилиси, Рига, Ереван, Будапешт, Прага, Краков, Бухарест, София, Белград, Загреб, Любляна, Братислава, Вильнюс, Таллин, Киев, Минск, Кишинев, Скопье.
-      
-      Отвечай на русском языке, будь дружелюбным и полезным. Если вопрос не связан с путешествиями, вежливо перенаправь разговор в нужное русло.`
+      const systemPrompt = `Привет! Представь что ты являешься туристическим агентом, и к тебе клиент обратился за помощью, когда решил посетить страну ${request.country ?? '{страна}'}.
 
-      const response = await axios.post(
-        this.API_URL,
+Старайся качественно выполнять свою работу, задавай уточняющие вопросы, если клиенты не четко формулируют свои мысли и вопросы, будь вежлив и точен в своих ответах.`
+
+      const resp = await axios.post(
+        this.CHAT_URL,
         {
-          model: 'GigaChat',
+          model: process.env.GIGACHAT_MODEL || this.DEFAULT_MODEL,
           messages: [
-            {
-              role: 'system',
-              content: systemPrompt,
-            },
-            {
-              role: 'user',
-              content: request.question,
-            },
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: request.question },
           ],
-          max_tokens: 1000,
+          max_tokens: 1024,
           temperature: 0.7,
         },
         {
           headers: {
-            'Authorization': `Bearer ${accessToken}`,
+            Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
-        }
+          httpsAgent: this.getHttpsAgent(),
+          timeout: Number(process.env.GIGACHAT_TIMEOUT || 60) * 1000,
+        },
       )
 
-      const answer = response.data.choices?.[0]?.message?.content || 'Извините, не удалось получить ответ от AI.'
-
+      const answer = resp.data?.choices?.[0]?.message?.content || 'Извините, не удалось получить ответ от AI.'
       return { answer }
-    } catch (error) {
-      console.error('GIGACHAT API error:', error)
-      
-      // Fallback к локальным ответам
-      return this.getFallbackResponse(request.question)
-    }
-  }
-
-  private static getFallbackResponse(question: string): TravelBotResponse {
-    const questionLower = question.toLowerCase().trim()
-
-    const responses: Record<string, string> = {
-      'где попробовать местную кухню':
-        'Рекомендую посетить местные рынки и семейные рестораны. В Лиссабоне попробуйте паштел де ната, в Стамбуле - кебаб и баклаву, в Тбилиси - хачапури и хинкали.',
-      'транспорт':
-        'В большинстве городов удобно пользоваться общественным транспортом. Рекомендую приобрести дневные или недельные проездные билеты. В некоторых городах есть карты для туристов.',
-      'достопримечательности':
-        'Обязательно посетите исторический центр города, местные музеи и парки. Многие достопримечательности можно посмотреть бесплатно или со скидкой по студенческому билету.',
-      'жилье':
-        'Рекомендую бронировать жилье заранее. Хостелы - бюджетный вариант, апартаменты - для семей, отели - для комфорта. Сравнивайте цены на разных платформах.',
-      'безопасность':
-        'Все рекомендуемые города безопасны для туристов. Следуйте общим правилам безопасности: не носите с собой крупные суммы, следите за вещами, избегайте темных улиц ночью.',
-      'бюджет':
-        'Для экономии бюджета рекомендую: бронировать билеты заранее, выбирать жилье вдали от центра, готовить самим, пользоваться общественным транспортом, искать бесплатные развлечения.',
-      'виза':
-        'Для большинства европейских городов нужна шенгенская виза. Для Турции, Грузии, Армении виза не нужна для граждан РФ. Уточняйте актуальную информацию на официальных сайтах.',
-    }
-
-    // Ищем подходящий ответ
-    for (const [key, answer] of Object.entries(responses)) {
-      if (questionLower.includes(key)) {
-        return { answer }
+    } catch (error: any) {
+      const status = error?.response?.status || error?.status
+      if (status === 401 || status === 403) {
+        console.error('GIGACHAT API unauthorized. Verify access token and scope.', error?.response?.data)
+      } else {
+        console.error('GIGACHAT API error:', error)
       }
+      throw error
     }
-
-    // Общие ответы
-    const generalAnswers = [
-      'Это отличный вопрос! Рекомендую изучить местные блоги и форумы путешественников для получения актуальной информации.',
-      'Для получения подробной информации советую обратиться к официальным туристическим сайтам города.',
-      'Это зависит от ваших предпочтений и бюджета. Рекомендую составить план заранее и изучить отзывы других путешественников.',
-      'Интересный вопрос! Попробуйте поискать информацию в местных группах в социальных сетях или туристических форумах.',
-      'Рекомендую использовать наш сервис для поиска подходящих городов по вашему бюджету и предпочтениям.',
-    ]
-
-    const randomAnswer = generalAnswers[Math.floor(Math.random() * generalAnswers.length)]
-    return { answer: randomAnswer }
   }
 }

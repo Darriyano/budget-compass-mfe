@@ -1,11 +1,11 @@
 import { Request, Response } from 'express'
-import { TravelBotService } from '../services/TravelBotService'
+import { GigachatService } from '../services/GigachatService'
 import { TravelBotRequest } from '../types'
 
 export class TravelBotController {
   static async askQuestion(req: Request, res: Response): Promise<void> {
     try {
-      const { question } = req.body
+      const { question, country } = req.body
 
       if (!question || typeof question !== 'string') {
         res.status(400).json({
@@ -15,8 +15,8 @@ export class TravelBotController {
         return
       }
 
-      const request: TravelBotRequest = { question }
-      const response = await TravelBotService.askQuestion(request)
+      const request: TravelBotRequest = { question, country }
+      const response = await GigachatService.askQuestion(request)
 
       res.json({
         success: true,
