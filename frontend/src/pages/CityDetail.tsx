@@ -19,7 +19,7 @@ export default function CityDetail() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const { id } = useParams()
-  const { params, adjusted, setAdjusted, saveTrip } = useBudget()
+  const { params, setParams, adjusted, setAdjusted, saveTrip } = useBudget()
 
   useEffect(() => {
     const loadCity = async () => {
@@ -50,6 +50,7 @@ export default function CityDetail() {
     adjusted.food +
     adjusted.local +
     adjusted.buffer
+  const overBudget = sum > 100
 
   if (loading) {
     return <div className="card">Загрузка информации о городе...</div>
@@ -104,6 +105,27 @@ export default function CityDetail() {
             onChange={apply('buffer')}
           />
         </div>
+        {overBudget && (
+          <div className="card" style={{ background: '#fff4f4', border: '1px solid #f5c2c7' }}>
+            <div style={{ fontWeight: 600, marginBottom: 8 }}>Вы вышли за рамки бюджета</div>
+            <div style={{ marginBottom: 8 }}>Сумма категорий {sum}% превышает 100%. Вы можете изменить общий бюджет или переформировать проценты в чате.</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <label className="label">Изменить бюджет</label>
+              <input
+                className="input"
+                type="number"
+                value={total}
+                onChange={(e) => {
+                  const v = Number(e.target.value)
+                  if (!Number.isNaN(v)) {
+                    setParams({ budget: v })
+                  }
+                }}
+                style={{ maxWidth: 160 }}
+              />
+            </div>
+          </div>
+        )}
         <div className="card">
           <div className="label">Проверка суммы</div>
           <div>

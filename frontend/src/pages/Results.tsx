@@ -61,22 +61,25 @@ export default function Results() {
     <div className="grid cols-2">
       <MapView cities={cities} />
       <div className="grid">
-        {list.map((it) => {
+        {[...list]
+          .map((it) => {
           const s = it.c.scores || { culture: 60, nature: 60, party: 60 }
           const sum = Math.max(1, params.prefCulture + params.prefNature + params.prefParty)
           const wC = params.prefCulture / sum
           const wN = params.prefNature / sum
           const wP = params.prefParty / sum
           const weighted = Math.round(s.culture * wC + s.nature * wN + s.party * wP)
-          return (
+          return { it, match: { culture: s.culture, nature: s.nature, party: s.party, weighted } }
+        })
+        .sort((a, b) => b.match.weighted - a.match.weighted)
+        .map(({ it, match }) => (
           <CityCard
             key={it.c.id}
             city={it.c}
             budgetLeftPct={leftPct(it.total)}
-            match={{ culture: s.culture, nature: s.nature, party: s.party, weighted }}
+            match={match}
           />
-          )
-        })}
+        ))}
       </div>
     </div>
   )

@@ -100,6 +100,7 @@ export type AuthResponse = {
 export type TravelBotRequest = {
   question: string
   country?: string
+  origin?: string
   city?: {
     name: string
     country?: string
@@ -117,6 +118,8 @@ export type TravelBotRequest = {
     nature?: number
     party?: number
   }
+  startDate?: string
+  endDate?: string
   changeEvent?: {
     key: 'flights' | 'lodging' | 'food' | 'local' | 'buffer'
     oldValue: number
@@ -126,4 +129,18 @@ export type TravelBotRequest = {
 
 export type TravelBotResponse = {
   answer: string
+}
+
+export type RebalanceRequest = {
+  budget: number
+  current: BudgetBreakdown
+  lock: Array<'flights' | 'lodging' | 'food' | 'local' | 'buffer'>
+  city?: { name: string; country?: string }
+  preferences?: { culture?: number; nature?: number; party?: number }
+  chatContext?: string // optional: last assistant suggestions text
+}
+
+export type RebalanceResponse = {
+  breakdown: BudgetBreakdown
+  note?: string
 }

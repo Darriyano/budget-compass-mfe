@@ -53,10 +53,13 @@ export type CurrencyRates = {
 export type TravelBotRequest = {
   question: string
   country?: string
+  origin?: string
   city?: { name: string; country?: string }
   budget?: number
   budgetBreakdown?: BudgetBreakdown
   preferences?: { culture?: number; nature?: number; party?: number }
+  startDate?: string
+  endDate?: string
   changeEvent?: { key: 'flights' | 'lodging' | 'food' | 'local' | 'buffer'; oldValue: number; newValue: number }
 }
 

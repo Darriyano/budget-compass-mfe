@@ -1,4 +1,4 @@
-import { City, SavedTrip, CurrencyRates, TravelBotResponse, TravelBotRequest } from '../types'
+import { City, SavedTrip, CurrencyRates, TravelBotResponse, TravelBotRequest, BudgetBreakdown } from '../types'
 
 const API_BASE_URL = 'http://localhost:5000/api'
 
@@ -126,6 +126,23 @@ class ApiService {
       method: 'POST',
       body: JSON.stringify(payload),
     })
+  }
+
+  async rebalanceBudget(payload: {
+    budget: number
+    current: BudgetBreakdown
+    lock: Array<'flights' | 'lodging' | 'food' | 'local' | 'buffer'>
+    city?: { name: string; country?: string }
+    preferences?: { culture?: number; nature?: number; party?: number }
+    chatContext?: string
+  }): Promise<{ breakdown: BudgetBreakdown; note?: string }> {
+    return this.request<{ breakdown: BudgetBreakdown; note?: string }>(
+      '/travelbot/rebalance',
+      {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      },
+    )
   }
 }
 
