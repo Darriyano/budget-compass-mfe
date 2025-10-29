@@ -121,10 +121,10 @@ class ApiService {
   }
 
   // TravelBot API
-  async askTravelBot(question: string): Promise<TravelBotResponse> {
+  async askTravelBot(question: string, country?: string): Promise<TravelBotResponse> {
     return this.request<TravelBotResponse>('/travelbot/ask', {
       method: 'POST',
-      body: JSON.stringify({ question }),
+      body: JSON.stringify({ question, country }),
     })
   }
 }

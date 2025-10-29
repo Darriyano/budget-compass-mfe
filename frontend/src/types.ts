@@ -47,6 +47,7 @@ export type CurrencyRates = {
 
 export type TravelBotRequest = {
   question: string
+  country?: string
 }
 
 export type TravelBotResponse = {
