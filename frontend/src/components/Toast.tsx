@@ -34,5 +34,4 @@ export default function Toast({
   );
 }
 
-// Чтобы TypeScript точно видел модуль
 export {};

@@ -66,3 +66,27 @@ export type TravelBotRequest = {
 export type TravelBotResponse = {
   answer: string
 }
+
+export type User = {
+  id: string
+  email: string
+  name: string
+}
+
+export type AuthResponse = {
+  success: boolean
+  token?: string
+  user?: User
+  error?: string
+}
+
+export type LoginRequest = {
+  email: string
+  password: string
+}
+
+export type RegisterRequest = {
+  email: string
+  password: string
+  name: string
+}

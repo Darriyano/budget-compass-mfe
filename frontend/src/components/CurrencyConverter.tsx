@@ -6,7 +6,6 @@ export default function CurrencyConverter() {
   const [to, setTo] = useState<'USD' | 'EUR' | 'TRY' | 'GEL'>('EUR')
   const [amount, setAmount] = useState(100)
   const [rates, setRates] = useState({ USD: 1, EUR: 0.92, TRY: 34, GEL: 2.7 })
-  // const [loading, setLoading] = useState(false) // Пока не используется
 
   useEffect(() => {
     const loadRates = async () => {

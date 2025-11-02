@@ -8,8 +8,6 @@ export class TripController {
     try {
       const userId = (req as AuthenticatedRequest).userId
       
-      // Если пользователь авторизован, показываем только его поездки
-      // Иначе показываем все публичные поездки
       const trips = userId 
         ? TripModel.getTripsByUserId(userId)
         : TripModel.getAllTrips().filter(trip => !trip.userId)
@@ -40,7 +38,6 @@ export class TripController {
         return
       }
 
-      // Проверяем права доступа
       if (trip.userId && trip.userId !== userId) {
         res.status(403).json({
           success: false,

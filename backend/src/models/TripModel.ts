@@ -29,14 +29,13 @@ export class TripModel {
       userId: tripData.userId,
     }
 
-    this.trips.unshift(trip) // добавляем в начало списка
+    this.trips.unshift(trip)
     return trip
   }
 
   static deleteTrip(id: string, userId?: string): boolean {
     const trip = this.trips.find((trip) => trip.id === id)
     
-    // Проверяем права доступа
     if (userId && trip?.userId && trip.userId !== userId) {
       return false
     }

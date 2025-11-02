@@ -4,7 +4,7 @@ import { City, BudgetBreakdown } from '../types'
 import { useBudget } from '../context/BudgetContext'
 
 export default function TravelBot({ city }: { city?: City }) {
-  const [q, setQ] = useState('Подскажи лучшие идеи для моей поездки')
+  const [q, setQ] = useState('')
   const [a, setA] = useState('Я готов помогать с вашими планами!')
   const [loading, setLoading] = useState(false)
   const { params, adjusted, setAdjusted, setParams } = useBudget() as any
@@ -12,6 +12,22 @@ export default function TravelBot({ city }: { city?: City }) {
   const debTimer = useRef<number | null>(null)
   const greetedCityRef = useRef<string | null>(null)
   const touchedKeysRef = useRef<Set<'flights'|'lodging'|'food'|'local'|'buffer'>>(new Set())
+
+  const formatAnswer = (text: string) => {
+    let formatted = text
+    
+    formatted = formatted.replace(/^####\s+(.+)$/gm, '<h4>$1</h4>')
+    formatted = formatted.replace(/^###\s+(.+)$/gm, '<h3>$1</h3>')
+    formatted = formatted.replace(/^##\s+(.+)$/gm, '<h2>$1</h2>')
+    formatted = formatted.replace(/^#\s+(.+)$/gm, '<h1>$1</h1>')
+    formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>')
+    formatted = formatted.replace(/`([^`]+)`/g, '<code>$1</code>')
+    formatted = formatted.replace(/(<\/h[1-4]>)<br>/gi, '$1')
+    formatted = formatted.replace(/\n/g, '<br>')
+    
+    return formatted
+  }
 
   const contextCity = useMemo(() => {
     return city ? { name: city.name, country: city.country } : undefined
@@ -46,7 +62,6 @@ export default function TravelBot({ city }: { city?: City }) {
     }
   }
 
-  // Auto-suggestions on slider changes
   useEffect(() => {
     const prev = prevAdjustRef.current
     prevAdjustRef.current = adjusted
@@ -104,16 +119,12 @@ export default function TravelBot({ city }: { city?: City }) {
         })
         setA(response.answer)
       } catch (e) {
-        // ignore auto-suggest errors silently
       } finally {
         setLoading(false)
       }
     }, 500)
-
-    // cleanup not necessary here beyond timer
   }, [adjusted, contextCity, params.budget, params.prefCulture, params.prefNature, params.prefParty])
 
-  // Initial greeting when entering city page, tailored by preferences
   useEffect(() => {
     if (!city) return
     if (greetedCityRef.current === city.id) return
@@ -139,7 +150,6 @@ export default function TravelBot({ city }: { city?: City }) {
         })
         setA(response.answer)
       } catch {
-        // ignore greeting failures
       } finally {
         setLoading(false)
       }
@@ -147,69 +157,37 @@ export default function TravelBot({ city }: { city?: City }) {
   }, [city, contextCity, params.prefCulture, params.prefNature, params.prefParty, params.budget, adjusted])
 
   return (
-    <div className="card">
-      <div className="label">TravelBot</div>
+    <div className="card travel-bot-card">
+      <div className="label" style={{ textAlign: 'center', fontSize: '1.125rem' }}>TravelBot</div>
       <textarea
         className="input textarea"
         rows={3}
         value={q}
         onChange={(e) => setQ(e.target.value)}
+        placeholder="Подскажи лучшие идеи для моей поездки"
       />
-      <button
-        className="btn"
-        style={{ marginTop: 8 }}
-        onClick={handleAsk}
-        disabled={loading}
-      >
-        {loading ? 'Загрузка...' : 'Спросить'}
-      </button>
+      <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+        <button
+          className="btn"
+          onClick={handleAsk}
+          disabled={loading}
+        >
+          {loading ? 'Загрузка...' : 'Спросить'}
+        </button>
+        <button
+          className="btn btn--outline"
+          disabled={loading}
+          onClick={() => {
+            setQ('Переформируй проценты бюджета, сохранив мои выборы')
+          }}
+        >Переформировать проценты</button>
+      </div>
       <div style={{ display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
         <button
           className="btn btn--outline"
           disabled={loading}
-          onClick={async () => {
-            try {
-              setLoading(true)
-              const lock: Array<'flights'|'lodging'|'food'|'local'|'buffer'> = Array.from(touchedKeysRef.current)
-              const res = await apiService.rebalanceBudget({
-                budget: params.budget,
-                current: adjusted,
-                lock, // сохраняем пользовательские проценты
-                city: contextCity,
-                preferences: { culture: params.prefCulture, nature: params.prefNature, party: params.prefParty },
-                chatContext: a,
-              })
-              setAdjusted(res.breakdown)
-              setA('Обновил распределение бюджета на основе ваших выбранных процентов.')
-            } catch (e) {
-              setA('Не удалось пересчитать бюджет.')
-            } finally {
-              setLoading(false)
-            }
-          }}
-        >Переформировать проценты (сохранить мои выборы)</button>
-
-        <button
-          className="btn btn--outline"
-          disabled={loading}
-          onClick={async () => {
-            try {
-              setLoading(true)
-              const res = await apiService.rebalanceBudget({
-                budget: params.budget,
-                current: adjusted,
-                lock: [],
-                city: contextCity,
-                preferences: { culture: params.prefCulture, nature: params.prefNature, party: params.prefParty },
-                chatContext: a,
-              })
-              setAdjusted(res.breakdown)
-              setA('Переформировал бюджет на основе диалога.')
-            } catch (e) {
-              setA('Не удалось переформировать бюджет на основе чата.')
-            } finally {
-              setLoading(false)
-            }
+          onClick={() => {
+            setQ('Переформируй весь бюджет на основе нашего диалога')
           }}
         >Переформировать бюджет на основе чата</button>
 
@@ -217,37 +195,13 @@ export default function TravelBot({ city }: { city?: City }) {
           <button
             className="btn btn--outline"
             disabled={loading}
-            onClick={async () => {
-              const dates = `${params.startDate} — ${params.endDate}`
-              const question = `Подбери оптимальные авиабилеты из ${params.origin} в ${city.name} (${city.country}) на даты ${dates}. Учитывай мой общий бюджет ${params.budget} и долю на перелёты ${adjusted.flights}%. Дай 3–5 вариантов с ориентирами по авиакомпаниям, аэропортам/пересадкам и ориентировочными ценами. Без реальных ссылок.`
-              try {
-                setLoading(true)
-                const response = await apiService.askTravelBot({
-                  question,
-                  origin: params.origin,
-                  city: contextCity,
-                  country: contextCity?.country,
-                  budget: params.budget,
-                  budgetBreakdown: adjusted,
-                  preferences: {
-                    culture: params.prefCulture,
-                    nature: params.prefNature,
-                    party: params.prefParty,
-                  },
-                  startDate: params.startDate,
-                  endDate: params.endDate,
-                })
-                setA(response.answer)
-              } catch {
-                setA('Не удалось найти билеты.')
-              } finally {
-                setLoading(false)
-              }
+            onClick={() => {
+              setQ('Подскажи лучшие варианты авиабилетов для моей поездки')
             }}
           >Поиск билетов</button>
         )}
       </div>
-      <div style={{ marginTop: 10, whiteSpace: 'pre-wrap' }}>{a}</div>
+      <div style={{ marginTop: 12, padding: '12px', backgroundColor: 'var(--gray-50)', borderRadius: 'var(--radius-md)', border: '1px solid var(--gray-200)', whiteSpace: 'pre-wrap', height: '550px', overflowY: 'auto' }} dangerouslySetInnerHTML={{ __html: formatAnswer(a) }}></div>
     </div>
   )
 }

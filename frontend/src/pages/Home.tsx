@@ -1,30 +1,32 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useBudget } from '../context/BudgetContext';
+import { useAuth } from '../context/AuthContext';
 
 export default function Home() {
   const { params, setParams } = useBudget();
+  const { isAuthenticated } = useAuth();
   const nav = useNavigate();
 
   const onCalc = () => nav('/results');
 
   return (
     <>
-      {/* Hero Section */}
-      <section className="hero">
-        <div className="container">
-          <div className="hero__content">
-            <h1 className="hero__title">
-              Путешествия, которые тебе по карману — и по душе
-            </h1>
-            <p className="hero__subtitle">
-              Бюджетный компас - ваш помощник по поиску лучших маршрутов и впечатлений в рамках своего бюджета
-            </p>
+      {!isAuthenticated && (
+        <section className="hero">
+          <div className="container">
+            <div className="hero__content">
+              <h1 className="hero__title">
+                Путешествия, которые тебе по карману — и по душе
+              </h1>
+              <p className="hero__subtitle">
+                Бюджетный компас - ваш помощник по поиску лучших маршрутов и впечатлений в рамках своего бюджета
+              </p>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
-      {/* Form Section */}
       <section className="form-section">
         <div className="container">
           <h2 className="form-section__title">
@@ -32,7 +34,6 @@ export default function Home() {
           </h2>
           
           <div className="form-cards">
-            {/* Travel Parameters Card */}
             <div className="form-card">
               <h3 className="form-card__title">
                 Введите параметры для поиска подходящего путешествия
@@ -78,7 +79,6 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Preferences Card */}
             <div className="form-card">
               <h3 className="form-card__title">
                 Укажите насколько вам важны следующие факторы
@@ -129,7 +129,6 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Calculate Button */}
           <div style={{ textAlign: 'center' }}>
             <button className="btn" onClick={onCalc} style={{ fontSize: '1.125rem', padding: '1rem 3rem' }}>
               Рассчитать путешествие

@@ -69,44 +69,50 @@ export default function CityDetail() {
   }
 
   return (
-    <div className="grid cols-2">
-      <div className="grid">
-        <div className="card">
-          <div style={{ fontWeight: 700, fontSize: 18 }}>{city.name}</div>
-          <div className="chips">
-            <span className="chip">{city.country}</span>
+    <div className="city-detail-container" style={{ maxWidth: '1400px', margin: '0 auto', padding: 'var(--space-xl) var(--space-xl)' }}>
+      <div style={{ textAlign: 'center', marginBottom: 'var(--space-xl)' }}>
+        <h1 className="city-detail-title" style={{ marginBottom: 'var(--space-sm)', fontSize: '2.5rem' }}>{city.name}</h1>
+        <div className="chips" style={{ justifyContent: 'center' }}>
+          <span className="chip">{city.country}</span>
+        </div>
+      </div>
+      <div className="grid cols-2" style={{ alignItems: 'start' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', height: 'fit-content' }}>
+          <TravelBot city={city} />
+        </div>
+        <div className="grid" style={{ gap: 'var(--space-sm)' }}>
+          <BudgetPie b={adjusted} />
+          <div className="grid cols-2" style={{ gap: 'var(--space-md)' }}>
+            <BudgetSlider
+              label="Перелёты"
+              value={adjusted.flights}
+              onChange={apply('flights')}
+            />
+            <BudgetSlider
+              label="Жильё"
+              value={adjusted.lodging}
+              onChange={apply('lodging')}
+            />
+            <BudgetSlider
+              label="Еда"
+              value={adjusted.food}
+              onChange={apply('food')}
+            />
+            <BudgetSlider
+              label="Местное"
+              value={adjusted.local}
+              onChange={apply('local')}
+            />
+            <div></div>
+            <BudgetSlider
+              label="Резерв"
+              value={adjusted.buffer}
+              onChange={apply('buffer')}
+            />
           </div>
         </div>
-        <BudgetPie b={adjusted} />
-        <div className="grid cols-2">
-          <BudgetSlider
-            label="Перелёты"
-            value={adjusted.flights}
-            onChange={apply('flights')}
-          />
-          <BudgetSlider
-            label="Жильё"
-            value={adjusted.lodging}
-            onChange={apply('lodging')}
-          />
-          <BudgetSlider
-            label="Еда"
-            value={adjusted.food}
-            onChange={apply('food')}
-          />
-          <BudgetSlider
-            label="Местное"
-            value={adjusted.local}
-            onChange={apply('local')}
-          />
-          <BudgetSlider
-            label="Резерв"
-            value={adjusted.buffer}
-            onChange={apply('buffer')}
-          />
-        </div>
         {overBudget && (
-          <div className="card" style={{ background: '#fff4f4', border: '1px solid #f5c2c7' }}>
+          <div className="card" style={{ background: '#fff4f4', border: '1px solid #f5c2c7', marginTop: 'var(--space-lg)', gridColumn: '1 / -1' }}>
             <div style={{ fontWeight: 600, marginBottom: 8 }}>Вы вышли за рамки бюджета</div>
             <div style={{ marginBottom: 8 }}>Сумма категорий {sum}% превышает 100%. Вы можете изменить общий бюджет или переформировать проценты в чате.</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -126,12 +132,12 @@ export default function CityDetail() {
             </div>
           </div>
         )}
-        <div className="card">
-          <div className="label">Проверка суммы</div>
-          <div>
+        <div className="card" style={{ marginTop: 'var(--space-lg)', gridColumn: '1 / -1' }}>
+          <div className="label" style={{ textAlign: 'center', fontSize: '1.125rem' }}>Проверка суммы</div>
+          <div style={{ paddingLeft: 'var(--space-sm)' }}>
             Сумма процентов: <b>{sum}%</b>
           </div>
-          <div style={{ marginTop: 8 }}>
+          <div style={{ marginTop: 8, paddingLeft: 'var(--space-sm)' }}>
             Итого бюджет: <b>${total}</b>
           </div>
           <div className="grid cols-2" style={{ marginTop: 8 }}>
@@ -151,6 +157,7 @@ export default function CityDetail() {
           </div>
           <button
             className="btn"
+            style={{ marginTop: 'var(--space-lg)' }}
             onClick={() => {
               saveTrip({
                 cityId: city.id,
@@ -164,9 +171,6 @@ export default function CityDetail() {
             Сохранить вариант
           </button>
         </div>
-      </div>
-      <div className="grid">
-        <TravelBot city={city} />
       </div>
 
       {showToast && (

@@ -49,7 +49,6 @@ export const BudgetProvider: React.FC<{ children: React.ReactNode }> = ({
   const [adjusted, setAdjustedState] = useState<BudgetBreakdown>(defaultBudget)
   const [saved, setSaved] = useState<SavedTrip[]>([])
 
-  // Load saved trips from API on mount
   useEffect(() => {
     const loadSavedTrips = async () => {
       try {
@@ -57,7 +56,6 @@ export const BudgetProvider: React.FC<{ children: React.ReactNode }> = ({
         setSaved(trips)
       } catch (error) {
         console.error('Failed to load saved trips:', error)
-        // Fallback to localStorage
         try {
           const raw = localStorage.getItem(LS_KEY)
           if (raw) setSaved(JSON.parse(raw))
@@ -67,7 +65,6 @@ export const BudgetProvider: React.FC<{ children: React.ReactNode }> = ({
     loadSavedTrips()
   }, [])
 
-  // Auto-detect origin city based on geolocation (best-effort)
   useEffect(() => {
     let cancelled = false
     const detect = async () => {
@@ -100,14 +97,12 @@ export const BudgetProvider: React.FC<{ children: React.ReactNode }> = ({
         }
         setParamsState((prev) => ({ ...prev, origin: best.name }))
       } catch {
-        // ignore
       }
     }
     detect()
     return () => { cancelled = true }
   }, [])
 
-  // Save to localStorage as backup
   useEffect(() => {
     localStorage.setItem(LS_KEY, JSON.stringify(saved))
   }, [saved])
@@ -123,7 +118,6 @@ export const BudgetProvider: React.FC<{ children: React.ReactNode }> = ({
       setSaved((prev) => [savedTrip, ...prev])
     } catch (error) {
       console.error('Failed to save trip:', error)
-      // Fallback to local storage
       const id = crypto.randomUUID()
       const savedAt = new Date().toISOString()
       setSaved((prev) => [{ id, savedAt, ...t }, ...prev])
@@ -136,7 +130,6 @@ export const BudgetProvider: React.FC<{ children: React.ReactNode }> = ({
       setSaved((prev) => prev.filter((x) => x.id !== id))
     } catch (error) {
       console.error('Failed to delete trip:', error)
-      // Fallback to local storage
       setSaved((prev) => prev.filter((x) => x.id !== id))
     }
   }

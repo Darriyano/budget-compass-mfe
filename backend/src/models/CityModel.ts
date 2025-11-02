@@ -259,7 +259,6 @@ export class CityModel {
         const wN = searchParams.prefNature / prefSum
         const wP = searchParams.prefParty / prefSum
         const factorScore = s.culture * wC + s.nature * wN + s.party * wP
-        // Combined score prioritizes budget fit then factor match
         const combinedScore = budgetFit * 0.7 + (factorScore / 100) * 30
         return { ...city, totalCost, budgetFit, combinedScore }
       })

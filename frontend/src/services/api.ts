@@ -1,6 +1,7 @@
-import { City, SavedTrip, CurrencyRates, TravelBotResponse, TravelBotRequest, BudgetBreakdown } from '../types'
+import { City, SavedTrip, CurrencyRates, TravelBotResponse, TravelBotRequest, BudgetBreakdown, AuthResponse, LoginRequest, RegisterRequest, User } from '../types'
 
 const API_BASE_URL = 'http://localhost:5000/api'
+const TOKEN_KEY = 'budget-compass.auth.token'
 
 interface ApiResponse<T> {
   success: boolean
@@ -10,15 +11,21 @@ interface ApiResponse<T> {
 }
 
 class ApiService {
+  private getAuthToken(): string | null {
+    return localStorage.getItem(TOKEN_KEY)
+  }
+
   private async request<T>(
     endpoint: string,
     options: RequestInit = {},
   ): Promise<T> {
     const url = `${API_BASE_URL}${endpoint}`
+    const token = this.getAuthToken()
 
     const config: RequestInit = {
       headers: {
         'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` }),
         ...options.headers,
       },
       ...options,
@@ -39,7 +46,40 @@ class ApiService {
     }
   }
 
-  // Cities API
+  private async requestAuth(
+    endpoint: string,
+    options: RequestInit = {},
+  ): Promise<AuthResponse> {
+    const url = `${API_BASE_URL}${endpoint}`
+
+    const config: RequestInit = {
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
+      ...options,
+    }
+
+    try {
+      const response = await fetch(url, config)
+      const data: AuthResponse = await response.json()
+
+      if (!response.ok || !data.success) {
+        const error = new Error(data.error || 'Auth request failed')
+        ;(error as any).response = data
+        throw error
+      }
+
+      return data
+    } catch (error) {
+      if (error instanceof Error) {
+        throw error
+      }
+      console.error('Auth API Error:', error)
+      throw new Error('Auth request failed')
+    }
+  }
+
   async getCities(): Promise<City[]> {
     return this.request<City[]>('/cities')
   }
@@ -70,7 +110,6 @@ class ApiService {
     return this.request<City[]>(`/cities/search?${searchParams.toString()}`)
   }
 
-  // Trips API
   async getTrips(): Promise<SavedTrip[]> {
     return this.request<SavedTrip[]>('/trips')
   }
@@ -97,7 +136,6 @@ class ApiService {
     })
   }
 
-  // Currency API
   async getCurrencyRates(): Promise<CurrencyRates> {
     return this.request<CurrencyRates>('/currencies/rates')
   }
@@ -120,7 +158,6 @@ class ApiService {
     }>(`/currencies/convert?amount=${amount}&from=${from}&to=${to}`)
   }
 
-  // TravelBot API
   async askTravelBot(payload: TravelBotRequest): Promise<TravelBotResponse> {
     return this.request<TravelBotResponse>('/travelbot/ask', {
       method: 'POST',
@@ -143,6 +180,24 @@ class ApiService {
         body: JSON.stringify(payload),
       },
     )
+  }
+
+  async login(credentials: LoginRequest): Promise<AuthResponse> {
+    return this.requestAuth('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify(credentials),
+    })
+  }
+
+  async register(data: RegisterRequest): Promise<AuthResponse> {
+    return this.requestAuth('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  }
+
+  async getProfile(): Promise<User> {
+    return this.request<User>('/auth/profile')
   }
 }
 

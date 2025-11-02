@@ -10,7 +10,6 @@ export class AuthController {
     try {
       const { email, password, name }: RegisterRequest = req.body
 
-      // Валидация
       if (!email || !password || !name) {
         res.status(400).json({
           success: false,
@@ -29,7 +28,6 @@ export class AuthController {
 
       const user = await UserModel.register({ email, password, name })
       
-      // Создаем JWT токен
       const token = jwt.sign(
         { userId: user.id, email: user.email },
         JWT_SECRET,
@@ -77,7 +75,6 @@ export class AuthController {
         return
       }
 
-      // Создаем JWT токен
       const token = jwt.sign(
         { userId: user.id, email: user.email },
         JWT_SECRET,

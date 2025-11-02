@@ -38,7 +38,7 @@ export default function CityCard({ city, budgetLeftPct, match }: { city: City; b
         </div>
       )}
 
-      <div className="city-card__budget">
+      <div className="city-card__budget" style={{ marginTop: 'var(--space-lg)' }}>
         <div className="city-card__budget-label">
           Бюджет покрыт: <span className={`budget-status budget-status--${budgetStatus}`}>
             {Math.round(budgetLeftPct)}%

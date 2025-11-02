@@ -6,13 +6,11 @@ export class UserModel {
   private static users: User[] = []
 
   static async register(userData: RegisterRequest): Promise<User> {
-    // Проверяем, существует ли пользователь с таким email
     const existingUser = this.users.find(user => user.email === userData.email)
     if (existingUser) {
       throw new Error('Пользователь с таким email уже существует')
     }
 
-    // Хешируем пароль
     const saltRounds = 10
     const hashedPassword = await bcrypt.hash(userData.password, saltRounds)
 

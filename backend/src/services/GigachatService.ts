@@ -42,12 +42,10 @@ function deterministicRebalance(req: RebalanceRequest): { flights: number; lodgi
   const keys: Array<'flights'|'lodging'|'food'|'local'|'buffer'> = ['flights','lodging','food','local','buffer']
   const lockSet = new Set(req.lock)
   const result: any = { ...req.current }
-  // Clamp locked values 0..100
   for (const k of keys) if (lockSet.has(k)) result[k] = Math.max(0, Math.min(100, result[k] || 0))
   const lockedSum = keys.reduce((s,k)=> s + (lockSet.has(k) ? (result[k]||0) : 0), 0)
   const remainingKeys = keys.filter(k => !lockSet.has(k))
   const remaining = Math.max(0, 100 - lockedSum)
-  // Distribute remaining with stronger, context-aware weights
   const prefs = req.preferences || {}
   const ctx = (req.chatContext || '').toLowerCase()
   const mentions = {
@@ -68,11 +66,9 @@ function deterministicRebalance(req: RebalanceRequest): { flights: number; lodgi
   for (const k of remainingKeys) {
     result[k] = Math.max(0, (remaining * (baseWeights[k] || 1)) / weightSum)
   }
-  // Normalize rounding issues
   const total = keys.reduce((s,k)=> s + result[k], 0)
   if (total !== 100) {
     const diff = 100 - total
-    // Adjust buffer by diff if exists, otherwise first key
     const target = 'buffer' in result ? 'buffer' : keys[0]
     result[target] = Math.max(0, result[target] + diff)
   }
@@ -94,7 +90,6 @@ export class GigachatService {
   }
 
   static async rebalanceBudget(req: RebalanceRequest): Promise<RebalanceResponse> {
-    // Try to ask GigaChat for JSON with new percentages; fallback to deterministic proportional fill
     try {
       const token = await this.getAccessToken()
       const system = `Ты помогаешь распределять бюджет путешествия по категориям.
@@ -128,7 +123,6 @@ ${req.chatContext ? 'Контекст: ' + req.chatContext : ''}
         return { breakdown: json }
       }
     } catch (e) {
-      // fall through to deterministic
     }
     return { breakdown: deterministicRebalance(req) }
   }
