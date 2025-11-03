@@ -7,7 +7,7 @@ export default function TravelBot({ city }: { city?: City }) {
   const [q, setQ] = useState('')
   const [a, setA] = useState('Я готов помогать с вашими планами!')
   const [loading, setLoading] = useState(false)
-  const { params, adjusted, setAdjusted, setParams } = useBudget() as any
+  const { params, adjusted } = useBudget() as any
   const prevAdjustRef = useRef<BudgetBreakdown | null>(null)
   const debTimer = useRef<number | null>(null)
   const greetedCityRef = useRef<string | null>(null)
@@ -33,13 +33,14 @@ export default function TravelBot({ city }: { city?: City }) {
     return city ? { name: city.name, country: city.country } : undefined
   }, [city])
 
-  const handleAsk = async () => {
-    if (!q.trim()) return
+  const handleAsk = async (question?: string) => {
+    const questionText = question || q
+    if (!questionText.trim()) return
 
     setLoading(true)
     try {
       const response = await apiService.askTravelBot({
-        question: q,
+        question: questionText,
         origin: params.origin,
         city: contextCity,
         country: contextCity?.country,
@@ -123,7 +124,7 @@ export default function TravelBot({ city }: { city?: City }) {
         setLoading(false)
       }
     }, 500)
-  }, [adjusted, contextCity, params.budget, params.prefCulture, params.prefNature, params.prefParty])
+  }, [adjusted, contextCity, params.budget, params.prefCulture, params.prefNature, params.prefParty, params.origin, params.startDate, params.endDate])
 
   useEffect(() => {
     if (!city) return
@@ -154,7 +155,7 @@ export default function TravelBot({ city }: { city?: City }) {
         setLoading(false)
       }
     })()
-  }, [city, contextCity, params.prefCulture, params.prefNature, params.prefParty, params.budget, adjusted])
+  }, [city, contextCity, params.prefCulture, params.prefNature, params.prefParty, params.budget, adjusted, params.origin, params.startDate, params.endDate])
 
   return (
     <div className="card travel-bot-card">
@@ -169,7 +170,7 @@ export default function TravelBot({ city }: { city?: City }) {
       <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
         <button
           className="btn"
-          onClick={handleAsk}
+          onClick={() => handleAsk()}
           disabled={loading}
         >
           {loading ? 'Загрузка...' : 'Спросить'}
@@ -178,7 +179,7 @@ export default function TravelBot({ city }: { city?: City }) {
           className="btn btn--outline"
           disabled={loading}
           onClick={() => {
-            setQ('Переформируй проценты бюджета, сохранив мои выборы')
+            handleAsk('Переформируй проценты бюджета, сохранив мои выборы')
           }}
         >Переформировать проценты</button>
       </div>
@@ -187,7 +188,7 @@ export default function TravelBot({ city }: { city?: City }) {
           className="btn btn--outline"
           disabled={loading}
           onClick={() => {
-            setQ('Переформируй весь бюджет на основе нашего диалога')
+            handleAsk('Переформируй весь бюджет на основе нашего диалога')
           }}
         >Переформировать бюджет на основе чата</button>
 
@@ -196,7 +197,7 @@ export default function TravelBot({ city }: { city?: City }) {
             className="btn btn--outline"
             disabled={loading}
             onClick={() => {
-              setQ('Подскажи лучшие варианты авиабилетов для моей поездки')
+              handleAsk('Подскажи лучшие варианты авиабилетов для моей поездки')
             }}
           >Поиск билетов</button>
         )}
