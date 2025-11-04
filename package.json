@@ -1,52 +1,26 @@
 {
-  "name": "compass",
-  "version": "0.1.0",
+  "name": "travelfrog",
+  "version": "1.0.0",
+  "description": "Travel Frog - Trip planning application",
   "private": true,
-  "dependencies": {
-    "@testing-library/dom": "^10.4.1",
-    "@testing-library/jest-dom": "^6.9.0",
-    "@testing-library/react": "^16.3.0",
-    "@testing-library/user-event": "^13.5.0",
-    "@types/jest": "^27.5.2",
-    "@types/node": "^16.18.126",
-    "@types/react": "^19.1.16",
-    "@types/react-dom": "^19.1.9",
-    "leaflet": "^1.9.4",
-    "leaflet-defaulticon-compatibility": "^0.1.2",
-    "react": "^19.1.1",
-    "react-dom": "^19.1.1",
-    "react-leaflet": "^5.0.0",
-    "react-router-dom": "^7.9.3",
-    "react-scripts": "^5.0.1",
-    "recharts": "^3.2.1",
-    "typescript": "^4.9.5",
-    "web-vitals": "^2.1.4"
-  },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "postinstall": "npm run install:all",
+    "install:backend": "cd backend && npm ci --progress=false --loglevel=error || cd backend && npm install",
+    "install:frontend": "cd frontend && npm ci --progress=false --loglevel=error || cd frontend && npm install",
+    "install:all": "npm run install:backend && npm run install:frontend",
+    "build:backend": "cd backend && npm run build",
+    "build:frontend": "cd frontend && npm run build",
+    "build:prod": "npm run build:backend && npm run build:frontend && npm run copy:dist",
+    "copy:dist": "mkdir -p dist && cp -r backend/dist dist/backend && cp -r frontend/build dist/frontend",
+    "start:backend": "cd backend && npm start",
+    "start:frontend": "cd frontend && npm start",
+    "test": "echo \"No tests specified\" && exit 0"
   },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  },
-  "devDependencies": {
-    "@types/leaflet": "^1.9.20"
-  }
+  "keywords": [
+    "travel",
+    "planning",
+    "budget"
+  ],
+  "author": "",
+  "license": "ISC"
 }
