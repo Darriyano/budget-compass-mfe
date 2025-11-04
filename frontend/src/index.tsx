@@ -7,9 +7,13 @@ import { BudgetProvider } from './context/BudgetContext';
 import { AuthProvider } from './context/AuthContext';
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
+
+// Get base path from environment or use default
+const basePath = process.env.REACT_APP_BASE_PATH || ''
+
 root.render(
   <React.StrictMode>
-    <BrowserRouter>
+    <BrowserRouter basename={basePath}>
       <AuthProvider>
         <BudgetProvider>
           <App />

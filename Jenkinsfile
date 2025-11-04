@@ -6,8 +6,8 @@ pipeline {
     }
     
     environment {
-        REPO_URL = 'https://github.com/balamut-ark/TravelFrog.git'
-        BRANCH = 'main'
+        REPO_URL = 'https://github.com/Darriyano/budget-compass-mfe.git'
+        BRANCH = 'deploy'
     }
     
     stages {

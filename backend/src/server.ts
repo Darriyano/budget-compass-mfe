@@ -2,6 +2,8 @@ import 'dotenv/config'
 import express from 'express'
 import helmet from 'helmet'
 import morgan from 'morgan'
+import path from 'path'
+import fs from 'fs'
 import { corsMiddleware } from './middleware/cors'
 import { errorHandler, notFoundHandler } from './middleware/errorHandler'
 import cityRoutes from './routes/cityRoutes'
@@ -60,6 +62,49 @@ app.get('/health', (req, res) => {
     timestamp: new Date().toISOString(),
   })
 })
+
+// Serve static files from React app
+const frontendBuildPath = path.join(__dirname, '../../frontend/build')
+const basePath = process.env.BASE_PATH || ''
+
+// Check if frontend build exists
+const frontendExists = fs.existsSync(frontendBuildPath)
+
+if (frontendExists) {
+  // Serve static files with base path if configured
+  if (basePath) {
+    app.use(basePath, express.static(frontendBuildPath))
+    
+    // Fallback to index.html for client-side routing (SPA) with base path
+    app.get('*', (req, res, next) => {
+      // Only serve index.html for non-API routes that match base path
+      if (!req.path.startsWith('/api') && !req.path.startsWith('/health')) {
+        if (req.path.startsWith(basePath) || req.path === basePath || req.path === basePath + '/') {
+          res.sendFile(path.join(frontendBuildPath, 'index.html'))
+        } else {
+          next()
+        }
+      } else {
+        next()
+      }
+    })
+  } else {
+    app.use(express.static(frontendBuildPath))
+    
+    // Fallback to index.html for client-side routing (SPA)
+    app.get('*', (req, res, next) => {
+      // Only serve index.html for non-API routes
+      if (!req.path.startsWith('/api') && !req.path.startsWith('/health')) {
+        res.sendFile(path.join(frontendBuildPath, 'index.html'))
+      } else {
+        next()
+      }
+    })
+  }
+} else {
+  console.warn('⚠️  Frontend build directory not found. Static files will not be served.')
+  console.warn(`   Expected path: ${frontendBuildPath}`)
+}
 
 app.use(notFoundHandler)
 app.use(errorHandler)
