@@ -1,0 +1,20 @@
+{
+  "include": [
+    "backend/src",
+    "backend/dist",
+    "backend/package.json",
+    "backend/package-lock.json",
+    "backend/tsconfig.json",
+    "backend/.env",
+    "frontend/build",
+    "frontend/package.json",
+    "frontend/package-lock.json"
+  ],
+  "exclude": [
+    "node_modules",
+    ".git",
+    "*.log",
+    ".DS_Store"
+  ]
+}
+

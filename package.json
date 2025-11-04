@@ -1,0 +1,26 @@
+{
+  "name": "travelfrog",
+  "version": "1.0.0",
+  "description": "Travel Frog - Trip planning application",
+  "private": true,
+  "scripts": {
+    "postinstall": "npm run install:all",
+    "install:backend": "cd backend && npm ci --progress=false --loglevel=error || cd backend && npm install",
+    "install:frontend": "cd frontend && npm ci --progress=false --loglevel=error || cd frontend && npm install",
+    "install:all": "npm run install:backend && npm run install:frontend",
+    "build:backend": "cd backend && npm run build",
+    "build:frontend": "cd frontend && npm run build",
+    "build:prod": "npm run build:backend && npm run build:frontend && npm run copy:dist",
+    "copy:dist": "mkdir -p dist && cp -r backend/dist dist/backend && cp -r frontend/build dist/frontend",
+    "start:backend": "cd backend && npm start",
+    "start:frontend": "cd frontend && npm start",
+    "test": "echo \"No tests specified\" && exit 0"
+  },
+  "keywords": [
+    "travel",
+    "planning",
+    "budget"
+  ],
+  "author": "",
+  "license": "ISC"
+}
