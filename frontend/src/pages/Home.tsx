@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useBudget } from '../context/BudgetContext';
 import { useAuth } from '../context/AuthContext';
@@ -7,6 +7,12 @@ export default function Home() {
   const { params, setParams } = useBudget();
   const { isAuthenticated } = useAuth();
   const nav = useNavigate();
+  const [budgetInput, setBudgetInput] = useState<string>(params.budget.toString());
+
+  // Синхронизируем локальное состояние с глобальным
+  useEffect(() => {
+    setBudgetInput(params.budget.toString());
+  }, [params.budget]);
 
   const onCalc = () => nav('/results');
 
@@ -44,8 +50,22 @@ export default function Home() {
                   <input 
                     className="input" 
                     type="number" 
-                    value={params.budget} 
-                    onChange={e => setParams({ budget: Number(e.target.value) })} 
+                    value={budgetInput} 
+                    onChange={e => {
+                      const val = e.target.value;
+                      setBudgetInput(val);
+                      if (val === '' || val === '-') return;
+                      const num = Number(val);
+                      if (!Number.isNaN(num) && num >= 0) {
+                        setParams({ budget: num });
+                      }
+                    }}
+                    onBlur={e => {
+                      const val = e.target.value;
+                      if (val === '' || val === '-' || Number(val) < 0) {
+                        setBudgetInput(params.budget.toString());
+                      }
+                    }}
                     placeholder="Введите сумму"
                   />
                 </div>

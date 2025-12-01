@@ -20,6 +20,12 @@ export default function CityDetail() {
   const [error, setError] = useState<string | null>(null)
   const { id } = useParams()
   const { params, setParams, adjusted, setAdjusted, saveTrip } = useBudget()
+  const [budgetInput, setBudgetInput] = useState<string>(params.budget.toString())
+
+  // Синхронизируем локальное состояние с глобальным
+  useEffect(() => {
+    setBudgetInput(params.budget.toString())
+  }, [params.budget])
 
   useEffect(() => {
     const loadCity = async () => {
@@ -120,11 +126,20 @@ export default function CityDetail() {
               <input
                 className="input"
                 type="number"
-                value={total}
+                value={budgetInput}
                 onChange={(e) => {
-                  const v = Number(e.target.value)
-                  if (!Number.isNaN(v)) {
-                    setParams({ budget: v })
+                  const val = e.target.value
+                  setBudgetInput(val)
+                  if (val === '' || val === '-') return
+                  const num = Number(val)
+                  if (!Number.isNaN(num) && num >= 0) {
+                    setParams({ budget: num })
+                  }
+                }}
+                onBlur={(e) => {
+                  const val = e.target.value
+                  if (val === '' || val === '-' || Number(val) < 0) {
+                    setBudgetInput(params.budget.toString())
                   }
                 }}
                 style={{ maxWidth: 160 }}
