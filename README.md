@@ -1,46 +1,182 @@
-# Getting Started with Create React App
+# Budget Compass - Планировщик поездок
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Полнофункциональное приложение для планирования поездок с учетом бюджета и предпочтений.
 
-## Available Scripts
+## 🏗️ Архитектура
 
-In the project directory, you can run:
+- **Фронтенд**: React + TypeScript + React Router
+- **Бэкенд**: Express.js + TypeScript + Nodemon
+- **База данных**: In-memory (структуры данных JavaScript)
+- **API**: RESTful API с CORS поддержкой
 
-### `npm start`
+## 🚀 Быстрый старт
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+### Автоматический запуск (рекомендуется)
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+```bash
+./start-app.sh
+```
 
-### `npm test`
+### Ручной запуск
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+1. **Запуск бэкенда:**
 
-### `npm run build`
+```bash
+cd budget-compass-backend
+npm install
+npm run dev
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+2. **Запуск фронтенда:**
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+```bash
+cd budget-compass-mfe
+npm install
+npm start
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## 📱 Функциональность
 
-### `npm run eject`
+### Фронтенд
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+- ✅ Поиск городов по бюджету и предпочтениям
+- ✅ Детальная информация о городах
+- ✅ Настройка распределения бюджета
+- ✅ Конвертер валют
+- ✅ TravelBot (чат-бот для советов)
+- ✅ Сохранение поездок
+- ✅ Интерактивная карта
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### Бэкенд API
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+- ✅ `GET /api/cities` - список всех городов
+- ✅ `GET /api/cities/search` - поиск городов
+- ✅ `GET /api/cities/:id` - информация о городе
+- ✅ `GET /api/trips` - сохраненные поездки
+- ✅ `POST /api/trips` - сохранение поездки
+- ✅ `DELETE /api/trips/:id` - удаление поездки
+- ✅ `GET /api/currencies/rates` - курсы валют
+- ✅ `GET /api/currencies/convert` - конвертация валют
+- ✅ `POST /api/travelbot/ask` - вопрос TravelBot
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+## 🌐 Доступные URL
 
-## Learn More
+- **Фронтенд**: http://localhost:3000
+- **Бэкенд API**: http://localhost:5000
+- **Health Check**: http://localhost:5000/health
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## 🛠️ Технические детали
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+### Структура проекта
+
+```
+project/
+├── budget-compass-mfe/          # React фронтенд
+│   ├── src/
+│   │   ├── components/          # React компоненты
+│   │   ├── pages/              # Страницы приложения
+│   │   ├── context/            # React Context
+│   │   ├── services/           # API сервисы
+│   │   └── types.ts            # TypeScript типы
+│   └── package.json
+├── budget-compass-backend/       # Express бэкенд
+│   ├── src/
+│   │   ├── controllers/         # API контроллеры
+│   │   ├── models/             # Модели данных
+│   │   ├── routes/             # API маршруты
+│   │   ├── services/           # Бизнес логика
+│   │   └── types/              # TypeScript типы
+│   └── package.json
+└── start-app.sh                # Скрипт запуска
+```
+
+### Особенности реализации
+
+- **Типизация**: Полная типизация TypeScript на фронтенде и бэкенде
+- **CORS**: Настроен для работы с localhost:3000
+- **Обработка ошибок**: Graceful fallback на localStorage при недоступности API
+- **Валидация**: Валидация входных данных на бэкенде
+- **Структуры данных**: In-memory хранение с возможностью расширения
+
+## 🔧 Разработка
+
+### Добавление новых городов
+
+Отредактируйте `budget-compass-backend/src/models/CityModel.ts`
+
+### Добавление новых валют
+
+Отредактируйте `budget-compass-backend/src/models/CurrencyModel.ts`
+
+### Расширение TravelBot
+
+Отредактируйте `budget-compass-backend/src/services/TravelBotService.ts`
+
+## 📊 Примеры API запросов
+
+### Поиск городов
+
+```bash
+curl "http://localhost:5000/api/cities/search?budget=1000&startDate=2024-01-01&endDate=2024-01-07&prefCulture=70&prefNature=30&prefParty=50"
+```
+
+### Сохранение поездки
+
+```bash
+curl -X POST http://localhost:5000/api/trips \
+  -H "Content-Type: application/json" \
+  -d '{
+    "cityId": "lisbon",
+    "params": {
+      "budget": 1000,
+      "startDate": "2024-01-01",
+      "endDate": "2024-01-07",
+      "origin": "Москва",
+      "prefCulture": 70,
+      "prefNature": 30,
+      "prefParty": 50
+    },
+    "adjustedBudget": {
+      "flights": 40,
+      "lodging": 30,
+      "food": 15,
+      "local": 10,
+      "buffer": 5
+    },
+    "total": 1000
+  }'
+```
+
+### Вопрос TravelBot
+
+```bash
+curl -X POST http://localhost:5000/api/travelbot/ask \
+  -H "Content-Type: application/json" \
+  -d '{"question": "Где попробовать местную кухню?"}'
+```
+
+## ✅ Исправленные проблемы
+
+### TypeScript ошибки
+
+Все ошибки TypeScript были исправлены:
+
+- ✅ Добавлена типизация для всех API методов
+- ✅ Добавлены недостающие типы в `types.ts`
+- ✅ Исправлены неиспользуемые переменные
+- ✅ Проект успешно компилируется
+
+### Решенные проблемы:
+
+1. **TS2345: Argument of type 'unknown'** - добавлена типизация к API сервису
+2. **TS18046: 'response' is of type 'unknown'** - добавлены типы возвращаемых значений
+3. **ESLint warnings** - исправлены неиспользуемые переменные
+
+## 🎯 Следующие шаги
+
+- [ ] Интеграция с реальной базой данных (PostgreSQL/MongoDB)
+- [ ] Аутентификация пользователей
+- [ ] Интеграция с реальными API валют
+- [ ] Интеграция с AI для TravelBot
+- [ ] Мобильная версия
+- [ ] Тестирование (Jest/Cypress)
