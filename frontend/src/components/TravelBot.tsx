@@ -7,11 +7,12 @@ export default function TravelBot({ city }: { city?: City }) {
   const [q, setQ] = useState('')
   const [a, setA] = useState('Я готов помогать с вашими планами!')
   const [loading, setLoading] = useState(false)
-  const { params, adjusted } = useBudget() as any
+  const { params, adjusted, setAdjusted } = useBudget() as any
   const prevAdjustRef = useRef<BudgetBreakdown | null>(null)
   const debTimer = useRef<number | null>(null)
   const greetedCityRef = useRef<string | null>(null)
   const touchedKeysRef = useRef<Set<'flights'|'lodging'|'food'|'local'|'buffer'>>(new Set())
+  const chatHistoryRef = useRef<Array<{ role: 'user' | 'assistant'; content: string }>>([])
 
   const formatAnswer = (text: string) => {
     let formatted = text
@@ -39,6 +40,9 @@ export default function TravelBot({ city }: { city?: City }) {
 
     setLoading(true)
     try {
+      // Добавляем вопрос в историю
+      chatHistoryRef.current.push({ role: 'user', content: questionText })
+      
       const response = await apiService.askTravelBot({
         question: questionText,
         origin: params.origin,
@@ -54,10 +58,86 @@ export default function TravelBot({ city }: { city?: City }) {
         startDate: params.startDate,
         endDate: params.endDate,
       })
+      
+      // Добавляем ответ в историю
+      chatHistoryRef.current.push({ role: 'assistant', content: response.answer })
+      
       setA(response.answer)
+      if (!question) setQ('') // Очищаем поле ввода только если это был вопрос из поля ввода
     } catch (error) {
       console.error('Failed to get answer:', error)
       setA('Извините, произошла ошибка при получении ответа.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleRebalanceFromChat = async () => {
+    if (!chatHistoryRef.current.length) {
+      setA('Сначала проведите диалог с ботом, чтобы он мог предложить перераспределение бюджета на основе вашего общения.')
+      return
+    }
+
+    setLoading(true)
+    try {
+      // Формируем контекст чата из последних сообщений
+      const recentMessages = chatHistoryRef.current.slice(-6) // Последние 6 сообщений (3 пары вопрос-ответ)
+      const chatContext = recentMessages
+        .map(msg => `${msg.role === 'user' ? 'Пользователь' : 'Ассистент'}: ${msg.content}`)
+        .join('\n\n')
+
+      // Определяем, какие категории были затронуты в чате
+      const chatText = chatContext.toLowerCase()
+      const lock: Array<'flights' | 'lodging' | 'food' | 'local' | 'buffer'> = []
+      
+      // Если пользователь явно не упоминал категорию, она может быть изменена
+      if (!/(перелет|билет|avia|flight|рейс)/.test(chatText)) lock.push('flights')
+      if (!/(жиль|отел|гостиниц|apartment|отель|размещен)/.test(chatText)) lock.push('lodging')
+      if (!/(еда|ресторан|кухн|food|restaurant|cuisine|питание)/.test(chatText)) lock.push('food')
+      if (!/(экскурс|развлечен|активност|местн|транспорт|музей|park|парк|достопримечатель)/.test(chatText)) lock.push('local')
+      if (!/(резерв|страхов|непредвиден|запас)/.test(chatText)) lock.push('buffer')
+
+      const result = await apiService.rebalanceBudget({
+        budget: params.budget,
+        current: adjusted,
+        lock: lock.length > 0 ? lock : [],
+        city: contextCity,
+        preferences: {
+          culture: params.prefCulture,
+          nature: params.prefNature,
+          party: params.prefParty,
+        },
+        chatContext: chatContext,
+      })
+
+      // Округляем проценты до целых чисел
+      const roundedBreakdown = {
+        flights: Math.round(result.breakdown.flights),
+        lodging: Math.round(result.breakdown.lodging),
+        food: Math.round(result.breakdown.food),
+        local: Math.round(result.breakdown.local),
+        buffer: Math.round(result.breakdown.buffer),
+      }
+      // Нормализуем сумму до 100
+      const sum = roundedBreakdown.flights + roundedBreakdown.lodging + roundedBreakdown.food + roundedBreakdown.local + roundedBreakdown.buffer
+      if (sum !== 100) {
+        const diff = 100 - sum
+        roundedBreakdown.buffer = Math.max(0, roundedBreakdown.buffer + diff)
+      }
+      
+      // Обновляем ползунки
+      setAdjusted(roundedBreakdown)
+
+      // Формируем ответ от бота о перераспределении
+      const breakdownText = `Перелёты: ${roundedBreakdown.flights}%, Жильё: ${roundedBreakdown.lodging}%, Еда: ${roundedBreakdown.food}%, Местное: ${roundedBreakdown.local}%, Резерв: ${roundedBreakdown.buffer}%`
+      
+      const rebalanceMessage = `Я проанализировал наш диалог и перераспределил бюджет:\n\n${breakdownText}\n\nБюджет обновлён! Теперь вы можете скорректировать ползунки вручную или продолжить общение.`
+      
+      chatHistoryRef.current.push({ role: 'assistant', content: rebalanceMessage })
+      setA(rebalanceMessage)
+    } catch (error) {
+      console.error('Failed to rebalance:', error)
+      setA('Извините, произошла ошибка при перераспределении бюджета.')
     } finally {
       setLoading(false)
     }
@@ -118,6 +198,9 @@ export default function TravelBot({ city }: { city?: City }) {
           startDate: params.startDate,
           endDate: params.endDate,
         })
+        // Добавляем в историю
+        chatHistoryRef.current.push({ role: 'user', content: question })
+        chatHistoryRef.current.push({ role: 'assistant', content: response.answer })
         setA(response.answer)
       } catch (e) {
       } finally {
@@ -130,6 +213,8 @@ export default function TravelBot({ city }: { city?: City }) {
     if (!city) return
     if (greetedCityRef.current === city.id) return
     greetedCityRef.current = city.id
+    // Сбрасываем историю чата при смене города
+    chatHistoryRef.current = []
     const question = `Составь короткое приветственное сообщение для путешественника в городе ${city.name}. Встрои 3-5 персональных рекомендаций, учитывая предпочтения: культура ${params.prefCulture}%, природа ${params.prefNature}%, ночная жизнь ${params.prefParty}%.`
     ;(async () => {
       try {
@@ -149,6 +234,8 @@ export default function TravelBot({ city }: { city?: City }) {
           startDate: params.startDate,
           endDate: params.endDate,
         })
+        // Добавляем в историю приветствие
+        chatHistoryRef.current.push({ role: 'assistant', content: response.answer })
         setA(response.answer)
       } catch {
       } finally {
@@ -178,8 +265,58 @@ export default function TravelBot({ city }: { city?: City }) {
         <button
           className="btn btn--outline"
           disabled={loading}
-          onClick={() => {
-            handleAsk('Переформируй проценты бюджета, сохранив мои выборы')
+          onClick={async () => {
+            setLoading(true)
+            try {
+              // Блокируем все категории, которые пользователь изменял вручную
+              const lock = Array.from(touchedKeysRef.current) as Array<'flights' | 'lodging' | 'food' | 'local' | 'buffer'>
+              
+              const chatContext = chatHistoryRef.current.length > 0
+                ? chatHistoryRef.current.slice(-4).map(msg => `${msg.role === 'user' ? 'Пользователь' : 'Ассистент'}: ${msg.content}`).join('\n\n')
+                : ''
+
+              const result = await apiService.rebalanceBudget({
+                budget: params.budget,
+                current: adjusted,
+                lock: lock.length > 0 ? lock : [],
+                city: contextCity,
+                preferences: {
+                  culture: params.prefCulture,
+                  nature: params.prefNature,
+                  party: params.prefParty,
+                },
+                chatContext: chatContext,
+              })
+
+              // Округляем проценты до целых чисел
+              const roundedBreakdown = {
+                flights: Math.round(result.breakdown.flights),
+                lodging: Math.round(result.breakdown.lodging),
+                food: Math.round(result.breakdown.food),
+                local: Math.round(result.breakdown.local),
+                buffer: Math.round(result.breakdown.buffer),
+              }
+              // Нормализуем сумму до 100
+              const sum = roundedBreakdown.flights + roundedBreakdown.lodging + roundedBreakdown.food + roundedBreakdown.local + roundedBreakdown.buffer
+              if (sum !== 100) {
+                const diff = 100 - sum
+                roundedBreakdown.buffer = Math.max(0, roundedBreakdown.buffer + diff)
+              }
+
+              // Обновляем ползунки
+              setAdjusted(roundedBreakdown)
+
+              const breakdownText = `Перелёты: ${roundedBreakdown.flights}%, Жильё: ${roundedBreakdown.lodging}%, Еда: ${roundedBreakdown.food}%, Местное: ${roundedBreakdown.local}%, Резерв: ${roundedBreakdown.buffer}%`
+              const message = `Я перераспределил проценты бюджета, сохранив ваши выборы:\n\n${breakdownText}\n\nБюджет обновлён!`
+              
+              chatHistoryRef.current.push({ role: 'assistant', content: message })
+              setA(message)
+            } catch (error) {
+              console.error('Failed to rebalance:', error)
+              setA('Извините, произошла ошибка при перераспределении бюджета.')
+            } finally {
+              setLoading(false)
+            }
           }}
         >Переформировать проценты</button>
       </div>
@@ -187,9 +324,7 @@ export default function TravelBot({ city }: { city?: City }) {
         <button
           className="btn btn--outline"
           disabled={loading}
-          onClick={() => {
-            handleAsk('Переформируй весь бюджет на основе нашего диалога')
-          }}
+          onClick={handleRebalanceFromChat}
         >Переформировать бюджет на основе чата</button>
 
         {city && (
